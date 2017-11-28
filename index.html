@@ -288,7 +288,9 @@
     
     
     
-    var fn = [add,app,mul,div,del,rev,sum,mir]
+    var fn = [add,add,add,app,mul,mul,div,del,rev,sum,mir];
+    
+    var start = r(-10,10);
     
     var btns = [];
     var btnban = [];
@@ -298,37 +300,62 @@
         btns[i] = new fn[fcts]();
         document.getElementById("btn"+i).innerHTML = btns[i].str();
     }
-    document.getElementById("num").innerHTML = seed;
+    document.getElementById("num").innerHTML = start;
     
     var rescnt = [];
-    var stg = [seed];
-    for(var i=0; i<6; i++){
-        var tstg = [];
-        for(var stgi in stg){
-            for(var b=1; b<10; b++){
-                try{
-                    var x = btns[b].calc(stg[stgi]);
-                }catch(e){}finally{
-                    if(typeof rescnt[x] != "undefined"){
-                        rescnt[x]=rescnt[x]+6-i;
-                    }else{
-                        rescnt[x]=6-i;
+    var movmult = [10000,31,15,7,3,1]
+    
+    function brute(target, iter){  
+        rescnt = [];
+        var stg = [];
+        stg[seed] = 1;
+        for(var i=0; i<6; i++){
+            var tstg = [];
+            for(var stgi in stg){
+                for(var b=1; b<10; b++){
+                    try{
+                        var x = btns[b].calc(Number.parseInt(stgi));
+//                        console.log(stgi+"   "+b+"   "+x);
+                        if(typeof target != "undefined" && typeof iter != "undefined" && iter==i && x==target)
+                            console.log(b+" -- "+stgi);
+                    }catch(e){}finally{
+                        if(typeof rescnt[x] != "undefined"){
+                            rescnt[x]+=stg[stgi]*movmult[i];
+                        }else{
+                            rescnt[x]=stg[stgi]*movmult[i];
+                        }
+                        if(typeof tstg[x] == "undefined")
+                            tstg[x] = stg[stgi];
+                        else
+                            tstg[x] += stg[stgi];
                     }
-                    if(tstg.indexOf(x)==-1)
-                        tstg.push(x);
                 }
             }
+            stg=tstg;
         }
-        stg=tstg;
     }
+    brute();
     gmin=Number.MAX_VALUE;
     goal=0;
-    for(var v =r(-100,0); v<r(50,200); v++){
+    for(var v =r(-100,0); v<r(50,100); v++){
         if(rescnt[v]<gmin){
             gmin=rescnt[v];
             goal=v;
         }
     }
+    if(gmin==Number.MAX_VALUE){
+        for(var v in rescnt){
+            if(typeof rescnt[v] != "undefined" && rescnt[v]<gmin){
+                gmin=rescnt[v];
+                goal=v;
+            }
+        }
+    }
+    var diffmap = [];
+    for(var i=1; i<10; i++)
+        for(var j=0; j<i*i; j++)
+            diffmap.push(i);
+    function diff(x){return x>=diffmap.length?10:diffmap[x]};
     
     var btn = function(i){
         var mov = Number.parseInt(document.getElementById("mov").innerHTML);
@@ -351,15 +378,17 @@
     for(var s=1; s<6; s++){
         var ss = document.getElementById("s"+s);
         var k = (6-s)*2;
-        if(gmin>k)ss.className = "fa fa-star-o";
-        else if(gmin==k)ss.className = "fa fa-star-half-o";
+        if(diff(gmin-1)>k)ss.className = "fa fa-star-o";
+        else if(diff(gmin-1)==k)ss.className = "fa fa-star-half-o";
         else ss.className = "fa fa-star";
     }
     
     function reset(){
-        document.getElementById("num").innerHTML = seed;
+        document.getElementById("num").innerHTML = start;
         document.getElementById("mov").innerHTML = 6;
     }
+    
+    console.log(gmin);
     
 
 </script>
