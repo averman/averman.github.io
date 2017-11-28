@@ -1,0 +1,365 @@
+<head>
+    <link rel="stylesheet" type="text/css" href="http://netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css">
+    <style type="text/css">
+        .btn{
+            font-size: 15; 
+            font-family: courier; 
+            text-align: center; 
+            width: 32%; 
+            display: inline-block;
+            background-color: aliceblue;
+            height: 50px;
+            line-height: 50px;
+            margin-top: 5px;
+            cursor:default;
+        }
+        
+        #goal{
+            font-size: 15; 
+            font-family: courier; 
+            text-align: center; 
+            width: 47%; 
+            display: inline-block;
+            background-color: aliceblue;
+            height: 20px;
+            line-height: 20px;
+            margin-top: 2px;
+            cursor:default;
+        }
+        
+        #reset{
+            font-size: 15; 
+            font-family: courier; 
+            text-align: center; 
+            width: 60%; 
+            background-color: aliceblue;
+            height: 20px;
+            line-height: 20px;
+            margin-top: 2px;
+            margin-left: auto;
+            margin-right: auto;
+            cursor:default;
+        }
+        
+        #mov{
+            font-size: 15; 
+            font-family: courier; 
+            text-align: center; 
+            width: 47%; 
+            display: inline-block;
+            background-color: aliceblue;
+            height: 20px;
+            line-height: 20px;
+            margin-top: 2px;
+            cursor:default;
+        }
+        
+        #num{
+            font-size: 60; 
+            font-family: courier; 
+            text-align: right;
+            margin: 5px;
+        }
+    
+        #calc{
+            width: 270px;
+            background-color: azure;
+        }
+        
+        #rating{
+            font-family: "FontAwesome";
+                content: "\f089 "
+        }
+    </style>
+</head>
+<body>
+    <div id="calc">
+        <div id="goal" >0</div>
+        <div id="mov" >0</div>
+        <div id="num" >0</div>
+        <div style="width: 260px">
+            <div id="btn1" class="btn" onclick="btn(1)">1</div>
+            <div id="btn2" class="btn" onclick="btn(2)">2</div>
+            <div id="btn3" class="btn" onclick="btn(3)">3</div>
+        </div>
+        <div style="width: 260px">
+            <div id="btn4" class="btn" onclick="btn(4)">1</div>
+            <div id="btn5" class="btn" onclick="btn(5)">2</div>
+            <div id="btn6" class="btn" onclick="btn(6)">3</div>
+        </div>
+        <div style="width: 260px">
+            <div id="btn7" class="btn" onclick="btn(7)">1</div>
+            <div id="btn8" class="btn" onclick="btn(8)">2</div>
+            <div id="btn9" class="btn" onclick="btn(9)">3</div>
+        </div>
+        <div id="reset" onclick="reset()">reset</div>
+        <div>
+            difficulty:
+            <i id="s1"></i>
+            <i id="s2"></i>
+            <i id="s3"></i>
+            <i id="s4"></i>
+            <i id="s5"></i>
+        </div>
+        
+    </div>
+</body>
+<script src="https://use.fontawesome.com/8d86241918.js"></script>
+<script src="http://davidbau.com/encode/seedrandom.js"></script>
+<script>
+    
+    function findGetParameter(parameterName) {
+        var result = null,
+            tmp = [];
+        var items = location.search.substr(1).split("&");
+        for (var index = 0; index < items.length; index++) {
+            tmp = items[index].split("=");
+            if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+        }
+        return result;
+    }
+    
+    var seed = Number.parseInt(findGetParameter("seed"));
+    seed = seed?seed:1;
+    var a = new Math.seedrandom(seed);
+    var r = function(min, max, ban){
+        var r = max - min;
+        var x = Math.round(a()*r+min);
+        while(ban && ban.indexOf(x) != -1)
+            x = Math.round(a()*r+min);
+        return x;
+    }
+    
+    
+    
+    var add = function(){
+        this.x = r(-9,10,[0]);
+    }
+    
+    add.prototype.calc = function(x){
+        var r = x + this.x;
+        if(r < 1000000 && r > -1000000)
+            return r;
+        throw 'overflow error';
+    }
+    
+    add.prototype.str = function(){return (this.x>=0?"+":"")+this.x}
+    
+    
+    
+    
+    var mul = function(x){
+        this.x = r(-9,10,[0,1]);
+    }
+    
+    mul.prototype.calc = function(x){
+        var r = x * this.x;
+        if(r < 1000000 && r > -1000000)
+            return r;
+        throw 'overflow error';
+    }
+    
+    mul.prototype.str = function(){return "*"+(this.x>=0?this.x:"("+this.x+")")}
+    
+    
+    
+    
+    var div = function(){
+        this.x = r(-9,10,[0,1]);
+    }
+    
+    div.prototype.calc = function(x){
+        if( x % this.x !=0 )
+            throw 'floating error';
+        var r = x / this.x;
+        if(r < 1000000 && r > -1000000)
+            return r;
+        throw 'overflow error';
+    }
+    
+    div.prototype.str = function(){return "/"+(this.x>=0?this.x:"("+this.x+")")}
+    
+    
+    
+    
+    var del = function(){
+        btnban.push(fn.indexOf(del));
+    }
+    
+    del.prototype.calc = function(x){
+        if(x>-10 && x<10)return 0;
+        var s = ""+x;
+        s = s.substring(0,s.length-1);
+        return Number.parseInt(s);
+    }
+    
+    del.prototype.str = function(){return "<<"}
+    
+    
+    
+    
+    var app = function(){
+        this.x = r(0,10,[]);
+    }
+    
+    app.prototype.calc = function(x){
+        var s = ""+x;
+        var r=Number.parseInt(s+this.x);
+        if(r < 1000000 && r > -1000000)
+            return r;
+        throw 'overflow error'; 
+    }
+    
+    app.prototype.str = function(){return "&\""+this.x+"\""}
+    
+    
+    
+    
+    var rev = function(){
+        btnban.push(fn.indexOf(rev));
+    }
+    
+    rev.prototype.calc = function(x){
+        var neg=false;
+        if(x<0){
+            neg=true;
+            x=-x;
+        }
+        var s = ""+x;
+        s=s.split("").reverse().join("");
+        s=neg?"-"+s:s;
+        var r=Number.parseInt(s);
+        if(r < 1000000 && r > -1000000)
+            return r;
+        throw 'overflow error'; 
+    }
+    
+    rev.prototype.str = function(){return "rev"}
+    
+    
+    
+    
+    var mir = function(){
+        btnban.push(fn.indexOf(mir));
+    }
+    
+    mir.prototype.calc = function(x){
+        var neg=false;
+        if(x<0){
+            neg=true;
+            x=-x;
+        }
+        var s = ""+x;
+        s=s+s.split("").reverse().join("");
+        s=neg?"-"+s:s;
+        var r=Number.parseInt(s);
+        if(r < 1000000 && r > -1000000)
+            return r;
+        throw 'overflow error'; 
+    }
+    
+    mir.prototype.str = function(){return "mir"}
+    
+    
+    
+    
+    var sum = function(){
+        btnban.push(fn.indexOf(sum));
+    }
+    
+    sum.prototype.calc = function(x){
+        var neg=false;
+        if(x<0){
+            neg=true;
+            x=-x;
+        }
+        var s = ""+x;
+        s=s.split("").reduce((a,v)=>Number.parseInt(a)+Number.parseInt(v));
+        s=neg?"-"+s:s;
+        var r=Number.parseInt(s);
+        if(r < 1000000 && r > -1000000)
+            return r;
+        throw 'overflow error'; 
+    }
+    
+    sum.prototype.str = function(){return "sum"}
+    
+    
+    
+    
+    
+    var fn = [add,app,mul,div,del,rev,sum,mir]
+    
+    var btns = [];
+    var btnban = [];
+    for(var i=1; i<10; i++){
+        var fcts = r(0,fn.length-1,btnban);
+//        console.log(fcts);
+        btns[i] = new fn[fcts]();
+        document.getElementById("btn"+i).innerHTML = btns[i].str();
+    }
+    document.getElementById("num").innerHTML = seed;
+    
+    var rescnt = [];
+    var stg = [seed];
+    for(var i=0; i<6; i++){
+        var tstg = [];
+        for(var stgi in stg){
+            for(var b=1; b<10; b++){
+                try{
+                    var x = btns[b].calc(stgi);
+                }catch(e){}finally{
+                    if(rescnt[x]){
+                        rescnt[x]=rescnt[x]+6-i;
+                    }else{
+                        rescnt[x]=6-i;
+                    }
+                    if(tstg.indexOf(x)==-1)
+                        tstg.push(x);
+                }
+            }
+        }
+        stg=tstg;
+    }
+    gmin=Number.MAX_VALUE;
+    goal=0;
+    for(var v =r(-100,0); v<r(50,200); v++){
+        if(rescnt[v]<gmin){
+            gmin=rescnt[v];
+            goal=v;
+        }
+    }
+    
+    var btn = function(i){
+        var mov = Number.parseInt(document.getElementById("mov").innerHTML);
+        if(mov<=0) return;
+        var x = Number.parseInt(document.getElementById("num").innerHTML); 
+        try{
+            document.getElementById("num").innerHTML = btns[i].calc(x);
+        }catch(e){
+            document.getElementById("num").innerHTML = "ERROR";
+            document.getElementById("mov").innerHTML = 0;
+            console.log(e);
+        }
+        mov = document.getElementById("mov").innerHTML = mov-1;
+        if(document.getElementById("num").innerHTML == document.getElementById("goal").innerHTML)
+            window.alert("you win")
+    }
+    document.getElementById("goal").innerHTML = goal;
+    document.getElementById("mov").innerHTML = 6;
+//    console.log("goal is "+goal+"     ... "+gmin);
+    for(var s=1; s<6; s++){
+        var ss = document.getElementById("s"+s);
+        var k = (6-s)*2;
+        if(gmin>k)ss.className = "fa fa-star-o";
+        else if(gmin==k)ss.className = "fa fa-star-half-o";
+        else ss.className = "fa fa-star";
+    }
+    
+    function reset(){
+        document.getElementById("num").innerHTML = seed;
+        document.getElementById("mov").innerHTML = 6;
+    }
+    
+
+</script>
