@@ -307,7 +307,7 @@
         for(var stgi in stg){
             for(var b=1; b<10; b++){
                 try{
-                    var x = btns[b].calc(stgi);
+                    var x = btns[b].calc(stg[stgi]);
                 }catch(e){}finally{
                     if(rescnt[x]){
                         rescnt[x]=rescnt[x]+6-i;
@@ -320,6 +320,7 @@
             }
         }
         stg=tstg;
+        console.log(stg.indexOf(48));
     }
     gmin=Number.MAX_VALUE;
     goal=0;
