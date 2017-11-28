@@ -309,7 +309,7 @@
                 try{
                     var x = btns[b].calc(stg[stgi]);
                 }catch(e){}finally{
-                    if(rescnt[x]){
+                    if(typeof rescnt[x] != "undefined"){
                         rescnt[x]=rescnt[x]+6-i;
                     }else{
                         rescnt[x]=6-i;
@@ -320,7 +320,6 @@
             }
         }
         stg=tstg;
-        console.log(stg.indexOf(48));
     }
     gmin=Number.MAX_VALUE;
     goal=0;
