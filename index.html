@@ -303,35 +303,39 @@
     document.getElementById("num").innerHTML = start;
     
     var rescnt = [];
+    var dstg = [];
     var movmult = [10000,31,15,7,3,1]
     
     function brute(target, iter){  
         rescnt = [];
-        var stg = [];
-        stg[seed] = 1;
+        dstg[-1]=[];
+        dstg[-1][start] = 1;
+        log=[]
         for(var i=0; i<6; i++){
-            var tstg = [];
-            for(var stgi in stg){
+            dstg[i]=[];
+            log[i]=[];
+            for(var stgi in dstg[i-1]){
                 for(var b=1; b<10; b++){
                     try{
                         var x = btns[b].calc(Number.parseInt(stgi));
 //                        console.log(stgi+"   "+b+"   "+x);
+                        if(typeof log[i][x] == "undefined")
+                            log[i][x]=[];
+                        log[i][x].push([stgi,b]);
                         if(typeof target != "undefined" && typeof iter != "undefined" && iter==i && x==target)
                             console.log(b+" -- "+stgi);
-                    }catch(e){}finally{
                         if(typeof rescnt[x] != "undefined"){
-                            rescnt[x]+=stg[stgi]*movmult[i];
+                            rescnt[x]+=dstg[i-1][stgi]*movmult[i];
                         }else{
-                            rescnt[x]=stg[stgi]*movmult[i];
+                            rescnt[x]=dstg[i-1][stgi]*movmult[i];
                         }
-                        if(typeof tstg[x] == "undefined")
-                            tstg[x] = stg[stgi];
+                        if(typeof dstg[i][x] == "undefined")
+                            dstg[i][x] = dstg[i-1][stgi];
                         else
-                            tstg[x] += stg[stgi];
-                    }
+                            dstg[i][x] += dstg[i-1][stgi];
+                    }catch(e){}
                 }
             }
-            stg=tstg;
         }
     }
     brute();
@@ -388,7 +392,35 @@
         document.getElementById("mov").innerHTML = 6;
     }
     
-    console.log(gmin);
+    function cpy(o){return JSON.parse(JSON.stringify(o))}
+    trace = function(goal,iter,lmov){
+        var res = [];
+        var b = log[iter][goal];
+        for(var i in b){
+            var newa = {goal: goal, mov: cpy(lmov)};
+            newa.goal = Number.parseInt(b[i][0]);
+            newa.mov.unshift(b[i][1]);
+            res.push(newa);
+        }
+        if(iter==0){
+            return res;
+        }else{
+            retres = [];
+            for(var i in res){
+                retres=retres.concat(trace(res[i].goal,iter-1,res[i].mov));
+            }
+            return retres;
+        }
+    }
+    
+    if(findGetParameter("mode")=="debug"){
+        var res = [];
+        for(var i=5; i >= 0; i--){
+            res=res.concat(trace(goal,i,[]));
+        }
+        console.log(gmin);
+        console.log(res);
+    }
     
 
 </script>
