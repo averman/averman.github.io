@@ -1,426 +1,67 @@
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style type="text/css">
-        .btn{
-            font-size: 15; 
-            font-family: courier; 
-            text-align: center; 
-            width: 32%; 
-            display: inline-block;
-            background-color: aliceblue;
-            height: 50px;
-            line-height: 50px;
-            margin-top: 5px;
-            cursor:default;
-        }
-        
-        #goal{
-            font-size: 15; 
-            font-family: courier; 
-            text-align: center; 
-            width: 47%; 
-            display: inline-block;
-            background-color: aliceblue;
-            height: 20px;
-            line-height: 20px;
-            margin-top: 2px;
-            cursor:default;
-        }
-        
-        #reset{
-            font-size: 15; 
-            font-family: courier; 
-            text-align: center; 
-            width: 60%; 
-            background-color: aliceblue;
-            height: 20px;
-            line-height: 20px;
-            margin-top: 2px;
-            margin-left: auto;
-            margin-right: auto;
-            cursor:default;
-        }
-        
-        #mov{
-            font-size: 15; 
-            font-family: courier; 
-            text-align: center; 
-            width: 47%; 
-            display: inline-block;
-            background-color: aliceblue;
-            height: 20px;
-            line-height: 20px;
-            margin-top: 2px;
-            cursor:default;
-        }
-        
-        #num{
-            font-size: 60; 
-            font-family: courier; 
-            text-align: right;
-            margin: 5px;
-        }
-    
-        #calc{
-            width: 270px;
-            background-color: azure;
-        }
-        
-        #rating{
-            font-family: "FontAwesome";
-                content: "\f089 "
-        }
-    </style>
+    <title>Codename Answer Card</title>
 </head>
 <body>
-    <div id="calc">
-        <div id="goal" >0</div>
-        <div id="mov" >0</div>
-        <div id="num" >0</div>
-        <div style="width: 260px">
-            <div id="btn1" class="btn" onclick="btn(1)">1</div>
-            <div id="btn2" class="btn" onclick="btn(2)">2</div>
-            <div id="btn3" class="btn" onclick="btn(3)">3</div>
-        </div>
-        <div style="width: 260px">
-            <div id="btn4" class="btn" onclick="btn(4)">1</div>
-            <div id="btn5" class="btn" onclick="btn(5)">2</div>
-            <div id="btn6" class="btn" onclick="btn(6)">3</div>
-        </div>
-        <div style="width: 260px">
-            <div id="btn7" class="btn" onclick="btn(7)">1</div>
-            <div id="btn8" class="btn" onclick="btn(8)">2</div>
-            <div id="btn9" class="btn" onclick="btn(9)">3</div>
-        </div>
-        <div id="reset" onclick="reset()">reset</div>
-        <div>
-            difficulty:
-            <i id="s1"></i>
-            <i id="s2"></i>
-            <i id="s3"></i>
-            <i id="s4"></i>
-            <i id="s5"></i>
-        </div>
-        
-    </div>
+    <Canvas id="cvs" width="500" height="500">
+    </Canvas>
 </body>
-<script src="https://use.fontawesome.com/8d86241918.js"></script>
-<script src="seedrandom.js"></script>
 <script>
-    
-    function findGetParameter(parameterName) {
-        var result = null,
-            tmp = [];
-        var items = location.search.substr(1).split("&");
-        for (var index = 0; index < items.length; index++) {
-            tmp = items[index].split("=");
-            if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+    String.prototype.hashCode = function() {
+        var hash = 0;
+        if (this.length == 0) {
+            return hash;
         }
-        return result;
-    }
-    
-    var seed = Number.parseInt(findGetParameter("seed"));
-    seed = seed?seed:1;
-    var a = new Math.seedrandom(seed);
-    var r = function(min, max, ban){
-        var r = max - min;
-        var x = Math.round(a()*r+min);
-        while(ban && ban.indexOf(x) != -1)
-            x = Math.round(a()*r+min);
-        return x;
-    }
-    
-    
-    
-    var add = function(){
-        this.x = r(-9,10,[0]);
-    }
-    
-    add.prototype.calc = function(x){
-        var r = x + this.x;
-        if(r < 1000000 && r > -1000000)
-            return r;
-        throw 'overflow error';
-    }
-    
-    add.prototype.str = function(){return (this.x>=0?"+":"")+this.x}
-    
-    
-    
-    
-    var mul = function(x){
-        this.x = r(-9,10,[0,1]);
-    }
-    
-    mul.prototype.calc = function(x){
-        var r = x * this.x;
-        if(r < 1000000 && r > -1000000)
-            return r;
-        throw 'overflow error';
-    }
-    
-    mul.prototype.str = function(){return "*"+(this.x>=0?this.x:"("+this.x+")")}
-    
-    
-    
-    
-    var div = function(){
-        this.x = r(-9,10,[0,1]);
-    }
-    
-    div.prototype.calc = function(x){
-        if( x % this.x !=0 )
-            throw 'floating error';
-        var r = x / this.x;
-        if(r < 1000000 && r > -1000000)
-            return r;
-        throw 'overflow error';
-    }
-    
-    div.prototype.str = function(){return "/"+(this.x>=0?this.x:"("+this.x+")")}
-    
-    
-    
-    
-    var del = function(){
-        btnban.push(fn.indexOf(del));
-    }
-    
-    del.prototype.calc = function(x){
-        if(x>-10 && x<10)return 0;
-        var s = ""+x;
-        s = s.substring(0,s.length-1);
-        return Number.parseInt(s);
-    }
-    
-    del.prototype.str = function(){return "<<"}
-    
-    
-    
-    
-    var app = function(){
-        this.x = r(0,10,[]);
-    }
-    
-    app.prototype.calc = function(x){
-        var s = ""+x;
-        var r=Number.parseInt(s+this.x);
-        if(r < 1000000 && r > -1000000)
-            return r;
-        throw 'overflow error'; 
-    }
-    
-    app.prototype.str = function(){return "&\""+this.x+"\""}
-    
-    
-    
-    
-    var rev = function(){
-        btnban.push(fn.indexOf(rev));
-    }
-    
-    rev.prototype.calc = function(x){
-        var neg=false;
-        if(x<0){
-            neg=true;
-            x=-x;
+        for (var i = 0; i < this.length; i++) {
+            var char = this.charCodeAt(i);
+            hash = ((hash<<5)-hash)+char;
+            hash = hash & hash; // Convert to 32bit integer
         }
-        var s = ""+x;
-        s=s.split("").reverse().join("");
-        s=neg?"-"+s:s;
-        var r=Number.parseInt(s);
-        if(r < 1000000 && r > -1000000)
-            return r;
-        throw 'overflow error'; 
+        return hash;
     }
-    
-    rev.prototype.str = function(){return "rev"}
-    
-    
-    
-    
-    var mir = function(){
-        btnban.push(fn.indexOf(mir));
+    String.prototype.next = function(){
+        return this.hashCode().toString();
     }
-    
-    mir.prototype.calc = function(x){
-        var neg=false;
-        if(x<0){
-            neg=true;
-            x=-x;
+    String.prototype.toNumber = function(low=0, high=100){
+        var rng = high - low;
+        var res = this.hashCode();
+        res = res  % rng;
+        res = res<0?res+rng+low:res+low;
+        return res;
+    }
+    random = function(low=0, high=100){
+        var res = seed.toNumber(low,high);
+        seed = seed.hashCode().toString();
+        return res;
+    }
+</script>
+<script>
+    var canvas = document.getElementById("cvs");
+    var ctx = canvas.getContext('2d');
+    var url = new URL(document.location.toString());
+    var seed = url.searchParams.get("id");
+    seed = typeof seed == "undefined"?"0":seed;
+    seed = seed == null?"0":seed;
+    // value = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25];
+    value = [0,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3];
+    for(var i=0; i<999; i++){
+        var x = random(0,25);
+        // console.log(x);
+        var spliced=value.splice(x);
+        var resplice = [];
+        for(var j=0; j<Math.floor(Math.log2(spliced.length));j++){
+            var ts = spliced.splice(Math.floor(spliced.length/2));
+            resplice = ts.concat(resplice);
+            // console.log(resplice);
+            // console.log(spliced);
         }
-        var s = ""+x;
-        s=s+s.split("").reverse().join("");
-        s=neg?"-"+s:s;
-        var r=Number.parseInt(s);
-        if(r < 1000000 && r > -1000000)
-            return r;
-        throw 'overflow error'; 
+        value = resplice.concat(spliced).concat(value);
+        // console.log(value);
     }
-    
-    mir.prototype.str = function(){return "mir"}
-    
-    
-    
-    
-    var sum = function(){
-        btnban.push(fn.indexOf(sum));
+    console.log(value);
+    for(var i=0; i<25; i++){
+        var x = Math.floor(i / 5);
+        var y = i%5;
+        ctx.fillStyle = value[i]==0?"black":value[i]==1?"grey":value[i]==2?"red":"blue";
+        ctx.fillRect(x*100+1, y*100+1, 98, 98);
     }
-    
-    sum.prototype.calc = function(x){
-        var neg=false;
-        if(x<0){
-            neg=true;
-            x=-x;
-        }
-        var s = ""+x;
-        s=s.split("").reduce((a,v)=>Number.parseInt(a)+Number.parseInt(v));
-        s=neg?"-"+s:s;
-        var r=Number.parseInt(s);
-        if(r < 1000000 && r > -1000000)
-            return r;
-        throw 'overflow error'; 
-    }
-    
-    sum.prototype.str = function(){return "sum"}
-    
-    
-    
-    
-    
-    var fn = [add,add,add,app,mul,mul,div,del,rev,sum,mir];
-    
-    var start = r(-10,10);
-    
-    var btns = [];
-    var btnban = [];
-    for(var i=1; i<10; i++){
-        var fcts = r(0,fn.length-1,btnban);
-//        console.log(fcts);
-        btns[i] = new fn[fcts]();
-        document.getElementById("btn"+i).innerHTML = btns[i].str();
-    }
-    document.getElementById("num").innerHTML = start;
-    
-    var rescnt = [];
-    var dstg = [];
-    var movmult = [10000,31,15,7,3,1]
-    
-    function brute(target, iter){  
-        rescnt = [];
-        dstg[-1]=[];
-        dstg[-1][start] = 1;
-        log=[]
-        for(var i=0; i<6; i++){
-            dstg[i]=[];
-            log[i]=[];
-            for(var stgi in dstg[i-1]){
-                for(var b=1; b<10; b++){
-                    try{
-                        var x = btns[b].calc(Number.parseInt(stgi));
-//                        console.log(stgi+"   "+b+"   "+x);
-                        if(typeof log[i][x] == "undefined")
-                            log[i][x]=[];
-                        log[i][x].push([stgi,b]);
-                        if(typeof target != "undefined" && typeof iter != "undefined" && iter==i && x==target)
-                            console.log(b+" -- "+stgi);
-                        if(typeof rescnt[x] != "undefined"){
-                            rescnt[x]+=dstg[i-1][stgi]*movmult[i];
-                        }else{
-                            rescnt[x]=dstg[i-1][stgi]*movmult[i];
-                        }
-                        if(typeof dstg[i][x] == "undefined")
-                            dstg[i][x] = dstg[i-1][stgi];
-                        else
-                            dstg[i][x] += dstg[i-1][stgi];
-                    }catch(e){}
-                }
-            }
-        }
-    }
-    brute();
-    gmin=Number.MAX_VALUE;
-    goal=0;
-    for(var v =r(-100,0); v<r(50,100); v++){
-        if(rescnt[v]<gmin){
-            gmin=rescnt[v];
-            goal=v;
-        }
-    }
-    if(gmin==Number.MAX_VALUE){
-        for(var v in rescnt){
-            if(typeof rescnt[v] != "undefined" && rescnt[v]<gmin){
-                gmin=rescnt[v];
-                goal=v;
-            }
-        }
-    }
-    var diffmap = [];
-    for(var i=1; i<10; i++)
-        for(var j=0; j<i*i; j++)
-            diffmap.push(i);
-    function diff(x){return x>=diffmap.length?10:diffmap[x]};
-    
-    var btn = function(i){
-        var mov = Number.parseInt(document.getElementById("mov").innerHTML);
-        if(mov<=0) return;
-        var x = Number.parseInt(document.getElementById("num").innerHTML); 
-        try{
-            document.getElementById("num").innerHTML = btns[i].calc(x);
-        }catch(e){
-            document.getElementById("num").innerHTML = "ERROR";
-            document.getElementById("mov").innerHTML = 0;
-            console.log(e);
-        }
-        mov = document.getElementById("mov").innerHTML = mov-1;
-        if(document.getElementById("num").innerHTML == document.getElementById("goal").innerHTML)
-            window.alert("you win")
-    }
-    document.getElementById("goal").innerHTML = goal;
-    document.getElementById("mov").innerHTML = 6;
-//    console.log("goal is "+goal+"     ... "+gmin);
-    for(var s=1; s<6; s++){
-        var ss = document.getElementById("s"+s);
-        var k = (6-s)*2;
-        if(diff(gmin-1)>k)ss.className = "fa fa-star-o";
-        else if(diff(gmin-1)==k)ss.className = "fa fa-star-half-o";
-        else ss.className = "fa fa-star";
-    }
-    
-    function reset(){
-        document.getElementById("num").innerHTML = start;
-        document.getElementById("mov").innerHTML = 6;
-    }
-    
-    function cpy(o){return JSON.parse(JSON.stringify(o))}
-    trace = function(goal,iter,lmov){
-        var res = [];
-        var b = log[iter][goal];
-        for(var i in b){
-            var newa = {goal: goal, mov: cpy(lmov)};
-            newa.goal = Number.parseInt(b[i][0]);
-            newa.mov.unshift(b[i][1]);
-            res.push(newa);
-        }
-        if(iter==0){
-            return res;
-        }else{
-            retres = [];
-            for(var i in res){
-                retres=retres.concat(trace(res[i].goal,iter-1,res[i].mov));
-            }
-            return retres;
-        }
-    }
-    
-    if(findGetParameter("mode")=="debug"){
-        var res = [];
-        for(var i=5; i >= 0; i--){
-            res=res.concat(trace(goal,i,[]));
-        }
-        console.log(gmin);
-        console.log(res);
-    }
-    
-
 </script>
