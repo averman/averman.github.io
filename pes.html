@@ -1,0 +1,116 @@
+<html>
+    <head>
+        <style>
+            .label {
+                display: inline-block; 
+                width:120
+            }
+            input {
+                margin-left:20px;
+                user-select: none; 
+            }
+        </style>
+    </head>
+    <body>
+        <div><span class="label">2: The Wall</span><input type="text" id="v2" size=2 onclick="inc(0)"></div>
+        <div><span class="label">3: The Defender</span><input type="text" id="v3" size=2 onclick="inc(1)"></div>
+        <div><span class="label">4: The Fullback</span><input type="text" id="v4" size=2 onclick="inc(2)"></div>
+        <div><span class="label">5: The Anchor</span><input type="text"  id="v5" size=2 onclick="inc(3)"></div>
+        <div><span class="label">6: The Versatile</span><input type="text" id="v6" size=2 onclick="inc(4)"></div>
+        <div><span class="label">7: The Attacker</span><input type="text" id="v7" size=2 onclick="inc(5)"></div>
+        <div><span class="label">8: The Glue</span><input type="text" id="v8" size=2 onclick="inc(6)"></div>
+        <div><span class="label">9: The Striker</span><input type="text" id="v9" size=2 onclick="inc(7)"></div>
+        <div><span class="label">10: The Fantasista</span><input type="text" id="v10" size=2 onclick="inc(8)"></div>
+        <div><span class="label">11: The Winger</span><input type="text" id="v11" size=2 onclick="inc(9)"></div>
+        <h2 id="attack"></h2>
+        <h2 id="build"></h2>
+        <h2 id="attside"></h2>
+        <h2 id="position"></h2>
+        <h2 id="support"></h2>
+        <h2 id="defense"></h2>
+        <h2 id="defside"></h2>
+        <h2 id="tackle"></h2>
+        <h2 id="line"></h2>
+        <h2 id="compact"></h2>
+        <h3 id="start1"></h3>
+        <h3 id="start2"></h3>
+        <h3 id="start3"></h3>
+        <h3 id="start4"></h3>
+    </body>
+</html>
+<script>
+    var x = [0,0,0,0,0,0,0,0,0,0];
+    var y = [0,0,0,0,0,0,0,0,0,0];
+    var z1 = [0,0,0,0,0,0,0,0,0,0];
+    var z2 = [0,0,0,0,0,0,0];
+    const zz1 = ['off','false winger','defensive','hug sideline','attacking fullback','wing rotation',
+    'tiki taka','false nine','centering target','false fullback'];
+    const zz2 = ['off','wing back','tight marking','deep line','swarm the box','counter target', 'gegenpress'];
+    function render(){
+        document.querySelector('#attack').innerText = y[0]>0.5?'counter':'possession';
+        document.querySelector('#build').innerText = y[1]>0.5?'long':'short';
+        document.querySelector('#attside').innerText = y[2]>0.5?'wide':'center';
+        document.querySelector('#position').innerText = y[3]>0.5?'flexible':'maintain';
+        document.querySelector('#support').innerText = 'Support Range: '+Math.floor(y[4]*10+0.5);
+        document.querySelector('#defense').innerText = y[5]>0.5?'all out':'frontline';
+        document.querySelector('#defside').innerText = y[6]>0.5?'wide':'center';
+        document.querySelector('#tackle').innerText = y[7]>0.5?'aggresive':'conservative';
+        document.querySelector('#line').innerText = 'Line Depth: '+Math.floor(y[8]*10+0.5);
+        document.querySelector('#compact').innerText = 'Compactness: '+Math.floor(y[9]*10+0.5);
+        let att = z1.indexOf(Math.max(...z1));
+        z1[att] = 0;
+        document.querySelector('#start1').innerText=zz1[att];
+        att = z1.indexOf(Math.max(...z1));
+        z1[att] = 0;
+        document.querySelector('#start2').innerText=zz1[att];
+        let def = z2.indexOf(Math.max(...z2));
+        z2[def] = 0;
+        document.querySelector('#start3').innerText=zz2[def];
+        def = z2.indexOf(Math.max(...z2));
+        z2[def] = 0;
+        document.querySelector('#start4').innerText=zz2[def];
+    }
+    function calculate(){
+        //   wall      defender  fullback  anchor    overall   attacker  glue      striker   fantasista  winger
+        y[0]=x[0]*0.08+x[1]*0.05+x[2]*0.06+x[3]*0.06+x[4]*0.05+x[5]*0.03+x[6]*0.03+x[7]*0.05+x[8]*0.01+x[9]*0.06;
+        y[1]=x[0]*0.07+x[1]*0.05+x[2]*0.03+x[3]*0.07+x[4]*0.05+x[5]*0.05+x[6]*0.02+x[7]*0.07+x[8]*0.04+x[9]*0.06;
+        y[2]=x[0]*0.05+x[1]*0.05+x[2]*0.08+x[3]*0.02+x[4]*0.05+x[5]*0.04+x[6]*0.03+x[7]*0.03+x[8]*0.04+x[9]*0.08;
+        y[3]=x[0]*0.04+x[1]*0.05+x[2]*0.06+x[3]*0.05+x[4]*0.05+x[5]*0.07+x[6]*0.07+x[7]*0.04+x[8]*0.06+x[9]*0.03;
+        y[4]=x[0]*0.01+x[1]*0.02+x[2]*0.03+x[3]*0.04+x[4]*0.05+x[5]*0.07+x[6]*0.06+x[7]*0.1+x[8]*0.09+x[9]*0.08;
+        y[5]=x[0]*0.02+x[1]*0.04+x[2]*0.06+x[3]*0.06+x[4]*0.05+x[5]*0.07+x[6]*0.06+x[7]*0.05+x[8]*0.07+x[9]*0.07;
+        y[6]=x[0]*0.03+x[1]*0.04+x[2]*0.08+x[3]*0.05+x[4]*0.05+x[5]*0.04+x[6]*0.06+x[7]*0.05+x[8]*0.05+x[9]*0.06;
+        y[7]=x[0]*0.09+x[1]*0.07+x[2]*0.06+x[3]*0.07+x[4]*0.05+x[5]*0.02+x[6]*0.04+x[7]*0.03+x[8]*0.03+x[9]*0.05;
+        y[8]=x[0]*0.01+x[1]*0.02+x[2]*0.04+x[3]*0.03+x[4]*0.05+x[5]*0.07+x[6]*0.06+x[7]*0.1+x[8]*0.09+x[9]*0.08;
+        y[9]=x[0]*0.01+x[1]*0.02+x[2]*0.07+x[3]*0.03+x[4]*0.05+x[5]*0.04+x[6]*0.06+x[7]*0.08+x[8]*0.09+x[9]*0.1;
+        z1[0]=x[4]*5;
+        z1[1]=x[2]*1.5+(x[3]?x[3]*-1:2)+x[5]*0.5+x[6]*0.5+x[9]*2.5;
+        z1[2]=(x[7]+x[8]>3?x[7]*2.5+x[8]*3:0);
+        z1[3]=x[2]*3+x[9]*4;
+        z1[4]=x[2]*6+(1-x[9])*1.5;
+        z1[5]=x[9]*(2.5-x[5]-x[6])*2+x[2];
+        z1[6]=x[6]*3+x[8]*2.5+x[5]*2;
+        z1[7]=x[7]?0:15;
+        z1[8]=x[7]*7+x[8]*3;
+        z1[9]=x[2]*6+(1.7-x[3])*2;
+        z2[0]=x[4]*5;
+        z2[1]=(2-x[2])*7+x[4]*2;
+        z2[2]=x[2]+x[3]<2?20:x[3]*5;
+        z2[3]=x[3]*4.5+x[3]*2;
+        z2[4]=(3-x[5]-x[1])*7;
+        z2[5]=x[7]*3+x[9]*2+x[8]*2.5;
+        z2[6]=60-z2[0]-z2[1]-z2[2]-z2[3]-z2[4]-z2[5];
+    }
+    function inc(i){
+        x[i]++;
+        let d = document.querySelectorAll('input');
+        let ii = 0;
+        for(let n of d){
+            n.value = x[ii];
+            ii++;
+        }
+        if(x.reduce((a, b) => a + b, 0)==10){
+            calculate();
+            render();
+        }
+    }
+</script>
