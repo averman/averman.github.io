@@ -3,5 +3,5 @@
   </body>
 </html>
 <script>
-window.fetch('https://api.coindesk.com/v1/bpi/currentprice.json ').then(x=>{document.body.innerHTML = JSON.stringify(x.json())})
+window.fetch('http://static.averism.com/message.json').then(x=>x.json()).then(x=>{document.body.innerHTML=x.message})
 </script>
