@@ -3,5 +3,5 @@
   </body>
 </html>
 <script>
-window.fetch('https://api.coindesk.com/v1/bpi/currentprice.json ').then(x=>console.log(x))
+window.fetch('https://api.coindesk.com/v1/bpi/currentprice.json ').then(x=>{document.body.innerHTML = JSON.stringify(x.json())})
 </script>
