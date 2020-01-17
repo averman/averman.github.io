@@ -304,7 +304,7 @@
     var stg = [seed];
     for(var i=0; i<6; i++){
         var tstg = [];
-        for(var stgi in stg){
+        for(var stgi of stg){
             for(var b=1; b<10; b++){
                 try{
                     var x = btns[b].calc(stgi);
