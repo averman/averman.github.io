@@ -2,6 +2,36 @@
     button {
         width: 190px;
     }
+    .card {
+        margin: 5px;
+        width: 150px;
+        word-wrap: normal;
+    }
+    /* Tooltip container */
+    .tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+    }
+
+    /* Tooltip text */
+    .tooltip .tooltiptext {
+    visibility: hidden;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    padding: 5px;
+    border-radius: 6px;
+    
+    /* Position the tooltip text - see examples below! */
+    position: absolute;
+    z-index: 1;
+    }
+
+    /* Show the tooltip text when you mouse over the tooltip container */
+    .tooltip:hover .tooltiptext {
+    visibility: visible;
+    }
 </style>
 <div style="display: flex;">
     <div style="width: 200px; height: 600px; display: inline-block;" id="questionBox">
@@ -18,18 +48,20 @@
 <script>
     questions = [];
 </script>
-<script src="questions/question1.js"></script>
 <script src="questions/question2.js"></script>
+<script src="questions/question3.js"></script>
+<script src="questions/question1.js"></script>
 <script>
     let mm = document.querySelector('#mainmenu');
     mm.onclick = function(){
         document.querySelector("#code").setAttribute("style",'display: none; margin: 5px;');
         document.querySelector("#submit").setAttribute("style",'display: none;');
+        document.querySelector('#scorearea').innerHTML = "";
         document.querySelector("#question").innerHTML = `
         in this game you are ask to code simple programs / algorithms. The problem is you have to complete it with constraint:<br/>
         each character you type require you to pay a cost (few first ones are free)<br/>
         can you manage to optimize the cost whilst still completing the program?`;
-    }
+    };
 </script>
 <script>
     document.querySelector('#questionBox');
@@ -46,7 +78,7 @@
             let sbmt = document.querySelector("#submit");
             let scoring = function (code) {
                 let res = {
-                    score: 100,
+                    score: q.credits || 100,
                     items: {}
                 };
                 for (const score of q.scoring) {
@@ -81,22 +113,28 @@
                     res.items[n].free = score.free;
                     res.items[n].startingPrice = score.startingPrice;
                     res.items[n].increment = score.increment;
+                    res.items[n].items = score.items;
+                    res.items[n].default = score.default?true:false;
                     res.items[n].totalPrice = extra>0?(extra*(2*score.startingPrice+(extra-1)*score.increment))/2:0;
                     res.score=res.score-res.items[n].totalPrice;
                 }
                 return res;
             }
-            document.querySelector('#code').onchange = function(){
+            document.querySelector('#code').onkeydown = function(){
                 let scr = scoring(document.querySelector('#code').value);
                 let s = "<h2>your credits: </h2><h1>"+scr.score+"</h1>";
                 let t = '<div style="display: inline-flex;">';
                 for(const itemName in scr.items){
                     let item = scr.items[itemName];
-                    let u = "<div><h4>"+itemName+"</h4><table>";
-                    u+='<tr><td>count</td><td>'+item.count+'</td></tr>';
+                    let u = "<div class=\"card\"><h4>"+itemName+'</h4>';
+                    if(!item.default){
+                        u+='<div class="tooltip">view set<br /><div class="tooltiptext">'
+                        u+=''+item.items+'</div></div>'
+                    }
+                    u+='<table><tr><td>count</td><td>'+item.count+'</td></tr>';
                     u+='<tr><td>free</td><td>'+item.free+'</td></tr>';
-                    let extra = item.free - item.count;
-                    let nextPrice = extra>0?item.startingPrice+extra*item.count:item.startingPrice;
+                    let extra = item.count - item.free;
+                    let nextPrice = extra>0?item.startingPrice+extra*item.increment:item.startingPrice;
                     u+='<tr><td>next price</td><td>'+nextPrice+'</td></tr>';
                     u+='<tr><td>total cost</td><td>'+item.totalPrice+'</td></tr></table></div>';
                     t+=u;
@@ -105,6 +143,7 @@
                 s = s+"<div>"+t+"</div>";
                 document.querySelector('#scorearea').innerHTML=s;
             };
+            document.querySelector('#code').onchange=document.querySelector('#code').onkeydown
             sbmt.onclick = function () {
                 try {
                     eval("code = " + document.querySelector("#code").value);

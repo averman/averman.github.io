@@ -47,9 +47,9 @@ questions.push({
         {
             name: "0",
             items: ["0"],
-            startingPrice: 1,
-            increment: 2,
-            free: 3
+            startingPrice: 2,
+            increment: 4,
+            free: 2
         },
         {
             name: "==",
@@ -63,7 +63,7 @@ questions.push({
             items: ["x","y","z"],
             startingPrice: 1,
             increment: 1,
-            free: 10
+            free: 8
         },
         {
             name: "symbol",
@@ -76,8 +76,8 @@ questions.push({
             name: "other",
             default: true,
             startingPrice: 1,
-            increment: 1,
-            free: 30
+            increment: 2,
+            free: 25
         }
     ]
 });
