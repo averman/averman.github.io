@@ -1,14 +1,17 @@
+<style>
+    button {
+        width: 190px;
+    }
+</style>
 <div style="display: flex;">
-    <div style="width: 100px; height: 600px; display: inline-block;" id="questionBox">
-
+    <div style="width: 200px; height: 600px; display: inline-block;" id="questionBox">
+        <button id="mainmenu">About this game</button>
     </div>
     <div style="width: 900px; height: 600px; display: inline-block; ">
         <div>
             <p id=question></p>
         </div>
-        <textarea name="" id="code" cols="120" rows="20" style="
-        display: block;
-        margin: 5px;">//write your code here</textarea><button id="submit">Submit</button>
+        <textarea name="" id="code" cols="120" rows="20">//write your code here</textarea><button id="submit">Submit</button>
         <div id="scorearea"></div>
     </div>
 </div>
@@ -17,6 +20,18 @@
 </script>
 <script src="questions/question1.js"></script>
 <script>
+    let mm = document.querySelector('#mainmenu');
+    mm.onclick = function(){
+        document.querySelector("#code").setAttribute("style",'display: none; margin: 5px;');
+        document.querySelector("#submit").setAttribute("style",'display: none;');
+        document.querySelector("#question").innerHTML = `
+        in this game you are ask to code simple programs / algorithms. The problem is you have to complete it with constraint:<br/>
+        each character you type require you to pay a cost (few first ones are free)<br/>
+        can you manage to optimize the cost whilst still completing the program?`;
+    }
+</script>
+<script>
+    document.querySelector('#questionBox');
     let qbox = document.querySelector('#questionBox');
     for (const q of questions) {
         let qbtn = document.createElement("button");
@@ -24,6 +39,9 @@
         qbtn.innerText = q.name;
         qbtn.check = q.check;
         qbtn.onclick = function () {
+            document.querySelector("#code").setAttribute("style",'display: block; margin: 5px;');
+            document.querySelector("#submit").setAttribute("style",'display: block;');
+            document.querySelector("#code").value="";
             let sbmt = document.querySelector("#submit");
             let scoring = function (code) {
                 let res = {
@@ -36,7 +54,6 @@
                     res.items[n] = {
                         count: 0
                     };
-                    if (code.length == 0) break;
                     if(score.default){
                         res.items[n].count = code.length;
                         code = "";
@@ -67,8 +84,21 @@
             }
             document.querySelector('#code').onchange = function(){
                 let scr = scoring(document.querySelector('#code').value);
-                document.querySelector('#scorearea').innerHTML=JSON.stringify(scr,null,2)
-                .split(" ").join("&nbsp;").split("\n").join("\n<br />\n");
+                let s = "<h2>your credits: </h2><h1>"+scr.score+"</h1>";
+                let t = "<div>";
+                for(const itemName in scr.items){
+                    let item = scr.items[itemName];
+                    let u = "<div><h4>"+itemName+"</h4><table>";
+                    u+='<tr><td>count</td><td>'+item.count+'</td></tr>';
+                    u+='<tr><td>free</td><td>'+item.free+'</td></tr>';
+                    let extra = item.free - item.count;
+                    u+='<tr><td>next price</td><td>'+extra>0?item.startingPrice+extra*item.count:item.startingPrice+'</td></tr>';
+                    u+='<tr><td>total cost</td><td>'+item.totalPrice+'</td></tr></table></div>';
+                    t+=u;
+                }
+                t+="</div>";
+                s = s+"<div>"+t+"</div>";
+                document.querySelector('#scorearea').innerHTML=s;
             };
             sbmt.onclick = function () {
                 try {
@@ -82,9 +112,11 @@
                     delete code;
                 }
             }
+            document.querySelector('#code').onchange()
             document.querySelector("#question").innerHTML = q.description;
         }
         qbox.appendChild(qbtn);
     }
     delete questions;
+    document.querySelector('#mainmenu').click();
 </script>

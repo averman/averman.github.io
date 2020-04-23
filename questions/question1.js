@@ -1,9 +1,11 @@
 let description = `
-please create a function that receive a single Number parameter, and return
-the word "fizz" if it's multiple of 3
-the word "buzz" if it's multiple of 5
-the word "fizzbuzz" if it's multiple of 3 and 5
-the input itself otherwise
+please create a function that receive a single Number parameter, and return:<br />
+<ul>
+<li>the word "fizz" if it's multiple of 3</li>
+<li>the word "buzz" if it's multiple of 5</li>
+<li>the word "fizzbuzz" if it's multiple of 3 and 5</li>
+<li>the input itself otherwise</li>
+</ul>
 `;
 
 questions.push({
