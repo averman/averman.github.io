@@ -1,0 +1,90 @@
+<div style="display: flex;">
+    <div style="width: 100px; height: 600px; display: inline-block;" id="questionBox">
+
+    </div>
+    <div style="width: 900px; height: 600px; display: inline-block; ">
+        <div>
+            <p id=question></p>
+        </div>
+        <textarea name="" id="code" cols="120" rows="20" style="
+        display: block;
+        margin: 5px;">//write your code here</textarea><button id="submit">Submit</button>
+        <div id="scorearea"></div>
+    </div>
+</div>
+<script>
+    questions = [];
+</script>
+<script src="questions/question1.js"></script>
+<script>
+    let qbox = document.querySelector('#questionBox');
+    for (const q of questions) {
+        let qbtn = document.createElement("button");
+        qbtn.setAttribute("id", q.name);
+        qbtn.innerText = q.name;
+        qbtn.check = q.check;
+        qbtn.onclick = function () {
+            let sbmt = document.querySelector("#submit");
+            let scoring = function (code) {
+                let res = {
+                    score: 100,
+                    items: {}
+                };
+                for (const score of q.scoring) {
+                    let n = score.name;
+                    console.log("scoring "+n);
+                    res.items[n] = {
+                        count: 0
+                    };
+                    if (code.length == 0) break;
+                    if(score.default){
+                        res.items[n].count = code.length;
+                        code = "";
+                    }else{
+                        for (const t of score.items) {
+                            console.log("scanning for "+t);
+                            let x = false;
+                            do {
+                                x = false;
+                                if (code.indexOf(t) >= 0) {
+                                    res.items[n].count++;
+                                    x = true;
+                                }
+                                code = code.replace(t, "");
+                                console.log(code.length);
+                            } while (x);
+                            if (code.length == 0) break;
+                        }
+                    }
+                    let extra = res.items[n].count - score.free;
+                    res.items[n].free = score.free;
+                    res.items[n].startingPrice = score.startingPrice;
+                    res.items[n].increment = score.increment;
+                    res.items[n].totalPrice = extra>0?(extra*(2*score.startingPrice+(extra-1)*score.increment))/2:0;
+                    res.score=res.score-res.items[n].totalPrice;
+                }
+                return res;
+            }
+            document.querySelector('#code').onchange = function(){
+                let scr = scoring(document.querySelector('#code').value);
+                document.querySelector('#scorearea').innerHTML=JSON.stringify(scr,null,2)
+                .split(" ").join("&nbsp;").split("\n").join("\n<br />\n");
+            };
+            sbmt.onclick = function () {
+                try {
+                    eval("code = " + document.querySelector("#code").value);
+                    q.check(code);
+                    alert("success!");
+                } catch (e) {
+                    alert(e);
+                    throw (e);
+                } finally {
+                    delete code;
+                }
+            }
+            document.querySelector("#question").innerHTML = q.description;
+        }
+        qbox.appendChild(qbtn);
+    }
+    delete questions;
+</script>
