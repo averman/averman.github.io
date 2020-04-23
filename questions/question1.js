@@ -31,6 +31,41 @@ questions.push({
     },
     scoring: [
         {
+            name: "fizz",
+            items: ["fizz"],
+            startingPrice: 15,
+            increment: 15,
+            free: 1
+        },
+        {
+            name: "buzz",
+            items: ["buzz"],
+            startingPrice: 15,
+            increment: 15,
+            free: 1
+        },
+        {
+            name: "0",
+            items: ["0"],
+            startingPrice: 1,
+            increment: 2,
+            free: 3
+        },
+        {
+            name: "==",
+            items: ["=="],
+            startingPrice: 2,
+            increment: 2,
+            free: 2
+        },
+        {
+            name: "xyz",
+            items: ["x","y","z"],
+            startingPrice: 1,
+            increment: 1,
+            free: 10
+        },
+        {
             name: "symbol",
             items: ["/","?",".",",","<",">","'",'"',";",":","!","%","^","&","*","+","-","="],
             startingPrice: 1,
@@ -38,18 +73,11 @@ questions.push({
             free: 25
         },
         {
-            name: "xyz",
-            items: ["x","y","z"],
-            startingPrice: 1,
-            increment: 1,
-            free: 15
-        },
-        {
             name: "other",
             default: true,
             startingPrice: 1,
             increment: 1,
-            free: 36
+            free: 30
         }
     ]
 });

@@ -66,6 +66,9 @@
                                 if (code.indexOf(t) >= 0) {
                                     res.items[n].count++;
                                     x = true;
+                                    console.log("deleting "+t);
+                                    console.log("code now is "+code);
+                                    console.log("count for "+n+" is "+res.items[n].count)
                                 }
                                 code = code.replace(t, "");
                                 console.log(code.length);
@@ -92,7 +95,8 @@
                     u+='<tr><td>count</td><td>'+item.count+'</td></tr>';
                     u+='<tr><td>free</td><td>'+item.free+'</td></tr>';
                     let extra = item.free - item.count;
-                    u+='<tr><td>next price</td><td>'+extra>0?item.startingPrice+extra*item.count:item.startingPrice+'</td></tr>';
+                    let nextPrice = extra>0?item.startingPrice+extra*item.count:item.startingPrice;
+                    u+='<tr><td>next price</td><td>'+nextPrice+'</td></tr>';
                     u+='<tr><td>total cost</td><td>'+item.totalPrice+'</td></tr></table></div>';
                     t+=u;
                 }
