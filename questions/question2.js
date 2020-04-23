@@ -9,7 +9,7 @@ please create a function that receive a single Number parameter, and return:<br 
 `;
 
 questions.push({
-    name: "fizzbuzz",
+    name: "fizzbuzz_variant_2",
     description,
     check: function(answerF){
         try{
@@ -47,37 +47,37 @@ questions.push({
         {
             name: "0",
             items: ["0"],
-            startingPrice: 1,
-            increment: 2,
-            free: 3
+            startingPrice: 3,
+            increment: 5,
+            free: 0
         },
         {
             name: "==",
             items: ["=="],
-            startingPrice: 2,
-            increment: 2,
-            free: 1
+            startingPrice: 3,
+            increment: 3,
+            free: 0
         },
         {
             name: "xyz",
             items: ["x","y","z"],
             startingPrice: 1,
             increment: 1,
-            free: 10
+            free: 6
         },
         {
             name: "symbol",
             items: ["/","?",".",",","<",">","'",'"',";",":","!","%","^","&","*","+","-","="],
             startingPrice: 1,
             increment: 1,
-            free: 25
+            free: 26
         },
         {
             name: "other",
             default: true,
             startingPrice: 1,
             increment: 1,
-            free: 30
+            free: 20
         }
     ]
 });

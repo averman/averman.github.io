@@ -19,6 +19,7 @@
     questions = [];
 </script>
 <script src="questions/question1.js"></script>
+<script src="questions/question2.js"></script>
 <script>
     let mm = document.querySelector('#mainmenu');
     mm.onclick = function(){
@@ -88,7 +89,7 @@
             document.querySelector('#code').onchange = function(){
                 let scr = scoring(document.querySelector('#code').value);
                 let s = "<h2>your credits: </h2><h1>"+scr.score+"</h1>";
-                let t = "<div>";
+                let t = '<div style="display: inline-flex;">';
                 for(const itemName in scr.items){
                     let item = scr.items[itemName];
                     let u = "<div><h4>"+itemName+"</h4><table>";
