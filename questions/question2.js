@@ -10,7 +10,7 @@ questions.push({
     check: function(answerF){
         try{
             if(typeof answerF(undefined,undefined,"Hello world!") == "undefined"){
-                throw new Error("Hello world! check not passed, input of "+i+" have undefined return value")
+                throw new Error("Hello world! check not passed, you have undefined return value")
             }
             if("Hello world!"!=answerF(undefined,undefined,"Hello world!").toString()){
                 const err = "Hello world! check not passed, your answer returned "
@@ -49,7 +49,7 @@ questions.push({
             items: ["H","e","l","o","w","r","d","!"],
             startingPrice: 15,
             increment: 1,
-            free: 3
+            free: 4
         },
         {
             name: "other",
