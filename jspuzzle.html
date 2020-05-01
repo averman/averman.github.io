@@ -2,35 +2,58 @@
     button {
         width: 190px;
     }
+
     .card {
         margin: 5px;
         width: 150px;
         word-wrap: normal;
     }
+
     /* Tooltip container */
     .tooltip {
-    position: relative;
-    display: inline-block;
-    border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+        position: relative;
+        display: inline-block;
+        border-bottom: 1px dotted black;
+        /* If you want dots under the hoverable text */
     }
 
     /* Tooltip text */
     .tooltip .tooltiptext {
-    visibility: hidden;
-    background-color: black;
-    color: #fff;
-    text-align: center;
-    padding: 5px;
-    border-radius: 6px;
-    
-    /* Position the tooltip text - see examples below! */
-    position: absolute;
-    z-index: 1;
+        visibility: hidden;
+        background-color: rgb(56, 56, 56);
+        color: black;
+        text-align: center;
+        width: 200px;
+        padding: 5px;
+        margin-bottom: 10px;
+        border-radius: 6px;
+
+        /* Position the tooltip text - see examples below! */
+        position: absolute;
+        z-index: 1;
+    }
+
+    /* Tooltip text */
+    .tooltipitem {
+        visibility: hidden;
+        background-color: silver;
+        color: black;
+        text-align: center;
+        line-height: 1.5em;
+        padding: 2px;
+        border-radius: 3px;
+        display: inline;
+
+        /* Position the tooltip text - see examples below! */
+        z-index: 1;
     }
 
     /* Show the tooltip text when you mouse over the tooltip container */
     .tooltip:hover .tooltiptext {
-    visibility: visible;
+        visibility: visible;
+    }
+    .tooltip:hover .tooltiptext .tooltipitem{
+        visibility: visible;
     }
 </style>
 <div style="display: flex;">
@@ -41,26 +64,44 @@
         <div>
             <p id=question></p>
         </div>
-        <textarea name="" id="code" cols="120" rows="20">//write your code here</textarea><button id="submit">Submit</button>
+        <textarea name="" id="code" cols="120" rows="20">//write your code here</textarea><button
+            id="submit">Submit</button>
         <div id="scorearea"></div>
+    </div>
+    <div id="debugarea" style="visibility: hidden;">
+        <button onclick="debugcopy()">Copy Playtest Data</button>
     </div>
 </div>
 <script>
     questions = [];
 </script>
 <script src="questions/question2.js"></script>
-<script src="questions/question3.js"></script>
+<script src="questions/question4.js"></script>
+<script src="questions/question5.js"></script>
 <script src="questions/question1.js"></script>
+<script src="questions/question3.js"></script>
+<script src="questions/question6.js"></script>
 <script>
+    if(new URLSearchParams(window.location.search).get("playtest")){
+        document.querySelector('#debugarea').setAttribute("style","");
+        window.debugmode=true;
+        window.playtestdata="";
+        window.debugcopy = function(){
+            window.navigator.clipboard.writeText(window.playtestdata);
+            alert("playtest data copied to clipboard");
+        }
+    }
     let mm = document.querySelector('#mainmenu');
-    mm.onclick = function(){
-        document.querySelector("#code").setAttribute("style",'display: none; margin: 5px;');
-        document.querySelector("#submit").setAttribute("style",'display: none;');
+    mm.onclick = function () {
+        document.querySelector("#code").setAttribute("style", 'display: none; margin: 5px;');
+        document.querySelector("#submit").setAttribute("style", 'display: none;');
         document.querySelector('#scorearea').innerHTML = "";
         document.querySelector("#question").innerHTML = `
-        in this game you are ask to code simple programs / algorithms. The problem is you have to complete it with constraint:<br/>
+        in this game you are asked to code <sup>(what seems to be)</sup> simple javascript function. <br />
+        The problem is you have to complete it with constraint:<br/>
         each character you type require you to pay a cost (few first ones are free)<br/>
-        can you manage to optimize the cost whilst still completing the program?`;
+        can you manage to optimize the cost whilst still completing the functionality?<br/>
+        <p>disclaimer:<br/>This is not a good coding practice,<br/>it's just a game for those who enjoys puzzle and coding in js</p>`;
     };
 </script>
 <script>
@@ -72,9 +113,9 @@
         qbtn.innerText = q.name;
         qbtn.check = q.check;
         qbtn.onclick = function () {
-            document.querySelector("#code").setAttribute("style",'display: block; margin: 5px;');
-            document.querySelector("#submit").setAttribute("style",'display: block;');
-            document.querySelector("#code").value="";
+            document.querySelector("#code").setAttribute("style", 'display: block; margin: 5px;');
+            document.querySelector("#submit").setAttribute("style", 'display: block;');
+            document.querySelector("#code").value = "";
             let sbmt = document.querySelector("#submit");
             let scoring = function (code) {
                 let res = {
@@ -83,28 +124,22 @@
                 };
                 for (const score of q.scoring) {
                     let n = score.name;
-                    console.log("scoring "+n);
                     res.items[n] = {
                         count: 0
                     };
-                    if(score.default){
+                    if (score.default) {
                         res.items[n].count = code.length;
                         code = "";
-                    }else{
+                    } else {
                         for (const t of score.items) {
-                            console.log("scanning for "+t);
                             let x = false;
                             do {
                                 x = false;
                                 if (code.indexOf(t) >= 0) {
                                     res.items[n].count++;
                                     x = true;
-                                    console.log("deleting "+t);
-                                    console.log("code now is "+code);
-                                    console.log("count for "+n+" is "+res.items[n].count)
                                 }
                                 code = code.replace(t, "");
-                                console.log(code.length);
                             } while (x);
                             if (code.length == 0) break;
                         }
@@ -114,41 +149,48 @@
                     res.items[n].startingPrice = score.startingPrice;
                     res.items[n].increment = score.increment;
                     res.items[n].items = score.items;
-                    res.items[n].default = score.default?true:false;
-                    res.items[n].totalPrice = extra>0?(extra*(2*score.startingPrice+(extra-1)*score.increment))/2:0;
-                    res.score=res.score-res.items[n].totalPrice;
+                    res.items[n].default = score.default ? true : false;
+                    res.items[n].totalPrice = extra > 0 ? (extra * (2 * score.startingPrice + (extra - 1) * score.increment)) / 2 : 0;
+                    res.score = res.score - res.items[n].totalPrice;
                 }
                 return res;
             }
-            document.querySelector('#code').onkeydown = function(){
+            document.querySelector('#code').onkeydown = function () {
                 let scr = scoring(document.querySelector('#code').value);
-                let s = "<h2>your credits: </h2><h1>"+scr.score+"</h1>";
+                let s = "<h2>your credits: </h2><h1>" + scr.score + "</h1>";
                 let t = '<div style="display: inline-flex;">';
-                for(const itemName in scr.items){
+                for (const itemName in scr.items) {
                     let item = scr.items[itemName];
-                    let u = "<div class=\"card\"><h4>"+itemName+'</h4>';
-                    if(!item.default){
-                        u+='<div class="tooltip">view set<br /><div class="tooltiptext">'
-                        u+=''+item.items+'</div></div>'
+                    let u = "<div class=\"card\"><h4>" + itemName + '</h4>';
+                    if (!item.default) {
+                        u += '<div class="tooltip">view set<br /><div class="tooltiptext">'
+                        u += '' + item.items.map(x=>"<div class=\"tooltipitem\">"+x+"</div>").join("\n") + '</div></div>'
                     }
-                    u+='<table><tr><td>count</td><td>'+item.count+'</td></tr>';
-                    u+='<tr><td>free</td><td>'+item.free+'</td></tr>';
+                    u += '<table><tr><td>count</td><td>' + item.count + '</td></tr>';
+                    u += '<tr><td>free</td><td>' + item.free + '</td></tr>';
                     let extra = item.count - item.free;
-                    let nextPrice = extra>0?item.startingPrice+extra*item.increment:item.startingPrice;
-                    u+='<tr><td>next price</td><td>'+nextPrice+'</td></tr>';
-                    u+='<tr><td>total cost</td><td>'+item.totalPrice+'</td></tr></table></div>';
-                    t+=u;
+                    let nextPrice = extra > 0 ? item.startingPrice + extra * item.increment : item.startingPrice;
+                    u += '<tr><td>next price</td><td>' + nextPrice + '</td></tr>';
+                    u += '<tr><td>total cost</td><td>' + item.totalPrice + '</td></tr></table></div>';
+                    t += u;
                 }
-                t+="</div>";
-                s = s+"<div>"+t+"</div>";
-                document.querySelector('#scorearea').innerHTML=s;
+                t += "</div>";
+                s = s + "<div>" + t + "</div>";
+                document.querySelector('#scorearea').innerHTML = s;
             };
-            document.querySelector('#code').onchange=document.querySelector('#code').onkeydown
+            document.querySelector('#code').onchange = document.querySelector('#code').onkeydown
             sbmt.onclick = function () {
                 try {
                     eval("code = " + document.querySelector("#code").value);
                     q.check(code);
-                    alert("success!");
+                    let scr = scoring(document.querySelector('#code').value);
+                    alert("success! your score is: " + scr.score);
+                    playtestdata+="question: "+q.name+"\n";
+                    playtestdata+="=====\n";
+                    playtestdata+="answer:\n"+document.querySelector("#code").value+"\n";
+                    playtestdata+="=====\n";
+                    playtestdata+="score: "+scr.score+"\n";
+                    playtestdata+="=====\n=====\n\n";
                 } catch (e) {
                     alert(e);
                     throw (e);

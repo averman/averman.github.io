@@ -15,12 +15,12 @@ questions.push({
         ];
         let ans = [3,102,1,84,0]
         try{
-            checklist.map((q,idx)=>{
+            checklist.forEach((q,idx)=>{
                 if(typeof answerF(q) == "undefined"){
-                    throw new Error("fizzbuzz check not passed, input of "+i+" have undefined return value")
+                    throw new Error("average check not passed, input of "+i+" have undefined return value")
                 }
                 if(ans[idx]!=answerF(q).toString()){
-                    const err = "fizzbuzz check not passed, input of "+q+" have value "+answerF(q)+" supposed to be "+ans[idx];
+                    const err = "average check not passed, input of "+q+" have value "+answerF(q)+" supposed to be "+ans[idx];
                     throw new Error(err);
                 }
             });
