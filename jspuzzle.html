@@ -184,7 +184,11 @@
                     eval("code = " + document.querySelector("#code").value);
                     q.check(code);
                     let scr = scoring(document.querySelector('#code').value);
-                    alert("success! your score is: " + scr.score);
+                    let msg = "function valid!\n\nyour score is: " + scr.score;
+                    if(scr.score-0 < 0) msg+="\ntry to score positive point!"
+                    else if(scr.score-0 < 100) msg+="\ntry to score better!"
+                    else msg+="\nperfect score!"
+                    alert(msg);
                     playtestdata+="question: "+q.name+"\n";
                     playtestdata+="=====\n";
                     playtestdata+="answer:\n"+document.querySelector("#code").value+"\n";

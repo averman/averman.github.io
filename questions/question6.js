@@ -46,9 +46,9 @@ questions.push({
         {
             name: "pricy stuff",
             items: ["{","}","=","o","w"],
-            startingPrice: 10,
-            increment: 3,
-            free: 0
+            startingPrice: 4,
+            increment: 1,
+            free: 1
         },
         {
             name: "number",
