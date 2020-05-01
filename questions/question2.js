@@ -32,7 +32,7 @@ questions.push({
         },
         {
             name: "braces",
-            items: ["[","(",")","[","]","]"],
+            items: ["[","]","(",")","{","}"],
             startingPrice: 1,
             increment: 1,
             free: 6

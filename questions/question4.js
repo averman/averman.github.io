@@ -47,7 +47,7 @@ questions.push({
         },
         {
             name: "free x, y, and braces",
-            items: ["x","y","[","(",")","[","]","]"],
+            items: ["x","y","(","[","{","}","]",")"],
             startingPrice: 0,
             increment: 0,
             free: 0
