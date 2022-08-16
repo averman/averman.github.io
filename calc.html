@@ -101,13 +101,16 @@
             <i id="s4"></i>
             <i id="s5"></i>
         </div>
-        
     </div>
+    <button id="easier">Easier</button>
+    <button id="harder">Harder</button>
+    <button id="next">Next</button>
+    <button id="prev">Previous</button>
 </body>
 <script src="https://use.fontawesome.com/8d86241918.js"></script>
 <script src="https://averman.github.io/seedrandom.js"></script>
 <script>
-    
+    var baseurl = location.origin + location.pathname;
     function findGetParameter(parameterName) {
         var result = null,
             tmp = [];
@@ -120,6 +123,14 @@
     }
     
     var seed = Number.parseInt(findGetParameter("seed"));
+    var diff = Number.parseInt(findGetParameter("diff") || '10')
+
+    document.querySelector('#easier').onclick = function(){location = baseurl + "?seed=" + seed + "&diff=" + (diff - 1)}
+    document.querySelector('#harder').onclick = function(){location = baseurl + "?seed=" + seed + "&diff=" + (diff + 1)}
+    document.querySelector('#next').onclick = function(){location = baseurl + "?seed=" + (seed + 1) + "&diff=" + (diff)}
+    document.querySelector('#prev').onclick = function(){location = baseurl + "?seed=" + (seed - 1) + "&diff=" + (diff)}
+
+    var gminmin = 11-diff;
     seed = seed?seed:1;
     var a = new Math.seedrandom(seed);
     var r = function(min, max, ban){
@@ -324,6 +335,7 @@
     gmin=Number.MAX_VALUE;
     goal=0;
     for(var v =r(-100,0); v<r(50,200); v++){
+        if(rescnt[v]<gminmin) continue;
         if(rescnt[v]<gmin){
             gmin=rescnt[v];
             goal=v;
