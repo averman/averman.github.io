@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Definitive Regex Game</title>
+    <title>The Regex Game</title>
     <style>
         :root {
             --bg-color: #1e1e2e; --sidebar-bg: #282a36; --primary-text: #f8f8f2; --secondary-text: #6272a4;
@@ -51,6 +51,7 @@
         .text-box-content { white-space: pre-wrap; overflow-y: auto; flex-grow: 1; outline: none; }
         #working-text-content { background: #343746; padding: 5px; border-radius: 3px; }
         #expected-box.success { border-color: var(--accent-color); box-shadow: 0 0 10px var(--accent-color); }
+        mark { background-color: #facc15; border-radius: 3px; color: #1e1e2e; }
     </style>
 </head>
 <body>
@@ -158,6 +159,60 @@
             });
         }
         
+        function updateHighlight() {
+            if (!currentPuzzle) return;
+            
+            const text = elements.workingTxt.textContent;
+            const findPattern = elements.findIn.value;
+
+            if (!findPattern) {
+                elements.workingTxt.innerHTML = ''; // Clear previous
+                elements.workingTxt.appendChild(document.createTextNode(text)); // Use text node to prevent HTML rendering
+                return;
+            }
+
+            try {
+                const isGlobal = elements.globalToggle.checked;
+                const flags = isGlobal ? 'gm' : 'm';
+                const re = new RegExp(findPattern, flags);
+                
+                elements.workingTxt.innerHTML = ''; // Clear previous content
+
+                if (isGlobal) {
+                    let lastIndex = 0;
+                    let match;
+                    while ((match = re.exec(text)) !== null) {
+                        elements.workingTxt.appendChild(document.createTextNode(text.substring(lastIndex, match.index)));
+                        const mark = document.createElement('mark');
+                        mark.textContent = match[0];
+                        elements.workingTxt.appendChild(mark);
+                        lastIndex = re.lastIndex;
+                        if (match.index === re.lastIndex) { // handle zero-length matches
+                            re.lastIndex++;
+                        }
+                    }
+                    if (lastIndex < text.length) {
+                        elements.workingTxt.appendChild(document.createTextNode(text.substring(lastIndex)));
+                    }
+                } else {
+                    const match = re.exec(text);
+                    if (match) {
+                        elements.workingTxt.appendChild(document.createTextNode(text.substring(0, match.index)));
+                        const mark = document.createElement('mark');
+                        mark.textContent = match[0];
+                        elements.workingTxt.appendChild(mark);
+                        elements.workingTxt.appendChild(document.createTextNode(text.substring(match.index + match[0].length)));
+                    } else {
+                        elements.workingTxt.appendChild(document.createTextNode(text));
+                    }
+                }
+            } catch (e) {
+                // Invalid regex, show plain text
+                elements.workingTxt.innerHTML = '';
+                elements.workingTxt.appendChild(document.createTextNode(text));
+            }
+        }
+        
         function checkAnswer() {
             const isCorrect = elements.workingTxt.textContent.trim() === elements.expectedTxt.textContent.trim();
             elements.expectedBox.classList.toggle('success', isCorrect);
@@ -169,7 +224,6 @@
             const rawReplacePattern = elements.replaceIn.value;
             const text = elements.workingTxt.textContent;
             
-            // Unescape the replacement string to handle \n, \t etc.
             const processedReplacePattern = unescapeString(rawReplacePattern);
 
             try {
@@ -177,6 +231,7 @@
                 const re = new RegExp(findPattern, flags);
                 elements.workingTxt.textContent = text.replace(re, processedReplacePattern);
                 checkAnswer();
+                updateHighlight();
             } catch (e) {
                 alert("Invalid Regex Pattern: " + e.message);
             }
@@ -186,6 +241,7 @@
             if (!currentPuzzle) return;
             elements.workingTxt.textContent = currentPuzzle.startText;
             checkAnswer();
+            updateHighlight();
         }
 
         function loadPuzzle(puzzle) {
@@ -199,6 +255,7 @@
             document.querySelectorAll('#puzzle-list button').forEach(btn => btn.classList.remove('active'));
             document.querySelector(`#puzzle-list button[data-name="${puzzle.name}"]`).classList.add('active');
             checkAnswer();
+            updateHighlight();
         }
 
         function init() {
@@ -211,6 +268,8 @@
             });
             elements.executeBtn.onclick = executeReplace;
             elements.resetBtn.onclick = resetText;
+            elements.findIn.addEventListener('input', updateHighlight);
+            elements.globalToggle.addEventListener('change', updateHighlight);
             if (puzzles.length > 0) loadPuzzle(puzzles[0]);
         }
 
