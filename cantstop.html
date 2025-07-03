@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Can't Stop!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Base & Typography --- */
+        :root {
+            --bg-color: #f0f4f8;
+            --board-bg: #ffffff;
+            --text-color: #333;
+            --accent-color: #4a90e2;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+            --font-display: 'Fredoka One', cursive;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: var(--font-body);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden; /* Prevent scrollbars from setup/game views */
+        }
+
+        /* --- Game Setup Modal --- */
+        #setup-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        #setup-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .setup-modal {
+            background: var(--board-bg);
+            padding: 2rem 3rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 90%;
+            width: 500px;
+        }
+
+        .setup-modal h1 {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
+
+        #player-inputs {
+            margin: 1.5rem 0;
+        }
+
+        .player-input-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .player-input-group input {
+            flex-grow: 1;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        .player-input-group input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .remove-player-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--danger-color);
+            margin-left: 0.5rem;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .remove-player-btn:hover {
+            transform: scale(1.2);
+        }
+
+        #add-player-btn, #start-game-btn {
+            width: 100%;
+            padding: 1rem;
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        #add-player-btn {
+            background-color: #e0e0e0;
+            color: #555;
+            margin-bottom: 0.75rem;
+        }
+        #add-player-btn:hover {
+            background-color: #d0d0d0;
+        }
+        #add-player-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #start-game-btn {
+            background-color: var(--success-color);
+            color: white;
+            box-shadow: 0 4px 0 #27ae60;
+        }
+        #start-game-btn:hover {
+            background-color: #29b765;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #27ae60;
+        }
+        #start-game-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 0 #27ae60;
+        }
+
+        /* --- Main Game Container --- */
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+            padding: 1rem;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        #game-container.visible {
+            opacity: 1;
+        }
+
+        /* --- Header --- */
+        header {
+            text-align: center;
+            padding-bottom: 1rem;
+        }
+
+        #player-info {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .player-score {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+        }
+        .player-score.active {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        #game-message {
+            margin-top: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            min-height: 2rem;
+            color: var(--accent-color);
+        }
+
+        /* --- Game Board --- */
+        #board {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 0.5vw;
+            padding: 1rem;
+            background: var(--board-bg);
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            width: 6vw;
+            max-width: 60px;
+            position: relative;
+        }
+
+        .track-label {
+            font-family: var(--font-display);
+            font-size: clamp(1rem, 2.5vw, 1.5rem);
+            padding: 0.25rem;
+            background-color: #f0f4f8;
+            width: 100%;
+            border-radius: 8px;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+        .column.captured .track-label {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .space {
+            width: 80%;
+            padding-top: 80%; /* Creates a square aspect ratio */
+            border: 2px solid #e0e0e0;
+            border-radius: 50%;
+            margin-bottom: 5px;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Player Markers */
+        .marker {
+            position: absolute;
+            top: 5%;
+            left: 5%;
+            width: 90%;
+            height: 90%;
+            border-radius: 50%;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            box-shadow: inset 0 -3px 5px rgba(0,0,0,0.2);
+        }
+        .temp-marker {
+            background: transparent !important;
+            border-style: dashed;
+            border-width: 4px;
+            box-shadow: none;
+        }
+
+        /* --- Controls --- */
+        footer {
+            padding-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        #dice-area {
+            display: flex;
+            gap: 1rem;
+            perspective: 800px;
+        }
+
+        .die {
+            width: 50px;
+            height: 50px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 1s ease-out;
+        }
+        .die-face {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: white;
+            border: 2px solid #333;
+            border-radius: 8px;
+            font-size: 2rem;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+        
+        .die-face u {
+            text-decoration: solid underline 3px;
+            text-underline-offset: -1px;
+        }
+
+        .face-1 { transform: rotateY(0deg) translateZ(25px); }
+        .face-2 { transform: rotateY(90deg) translateZ(25px); }
+        .face-3 { transform: rotateY(180deg) translateZ(25px); }
+        .face-4 { transform: rotateY(-90deg) translateZ(25px); }
+        .face-5 { transform: rotateX(90deg) translateZ(25px); }
+        .face-6 { transform: rotateX(-90deg) translateZ(25px); }
+
+        #action-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        #roll-button, #stop-button {
+            padding: 0.75rem 2rem;
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            color: white;
+        }
+        #roll-button { background-color: var(--accent-color); box-shadow: 0 4px 0 #3a7ac8; }
+        #roll-button:hover { background-color: #5a9eee; transform: translateY(-2px); box-shadow: 0 6px 0 #3a7ac8; }
+        #stop-button { background-color: var(--danger-color); box-shadow: 0 4px 0 #c0392b; }
+        #stop-button:hover { background-color: #f75c4c; transform: translateY(-2px); box-shadow: 0 6px 0 #c0392b; }
+        
+        #roll-button:disabled, #stop-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: translateY(0);
+            box-shadow: 0 4px 0 grey;
+            background-color: #bdc3c7;
+        }
+
+        #pair-choices {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            min-height: 45px;
+        }
+
+        .choice-btn {
+            padding: 0.5rem 1rem;
+            background: var(--success-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        .choice-btn:hover {
+            transform: scale(1.05);
+            background: #29b765;
+        }
+
+        /* --- Win Screen --- */
+        #win-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        #win-screen.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .win-modal {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            text-align: center;
+            transform: scale(0.5);
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        #win-screen.visible .win-modal {
+            transform: scale(1);
+        }
+        #winner-name {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+        .win-modal p {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        #play-again-btn {
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            .setup-modal {
+                padding: 1.5rem;
+                width: 95%;
+            }
+            .setup-modal h1 {
+                font-size: 2.5rem;
+            }
+            #game-container {
+                padding: 0.5rem;
+            }
+            #board {
+                padding: 0.5rem;
+                gap: 0.3vw;
+            }
+            .column {
+                width: 7vw;
+            }
+            #action-buttons {
+                width: 100%;
+                justify-content: space-around;
+            }
+            #roll-button, #stop-button {
+                width: 45%;
+                padding: 0.75rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Setup Screen -->
+    <div id="setup-screen">
+        <div class="setup-modal">
+            <h1>Can't Stop!</h1>
+            <p>Enter player names (2-4 players)</p>
+            <div id="player-inputs">
+                <div class="player-input-group">
+                    <input type="text" placeholder="Player 1 Name" value="Player 1">
+                </div>
+                <div class="player-input-group">
+                    <input type="text" placeholder="Player 2 Name" value="Player 2">
+                </div>
+            </div>
+            <button id="add-player-btn">Add Player</button>
+            <button id="start-game-btn">Start Game</button>
+        </div>
+    </div>
+
+    <!-- Main Game -->
+    <div id="game-container">
+        <header>
+            <div id="player-info"></div>
+            <div id="game-message"></div>
+        </header>
+        <main id="board"></main>
+        <footer>
+            <div id="dice-area">
+                <div class="die" id="die1">
+                    <div class="die-face face-1">1</div><div class="die-face face-2">2</div><div class="die-face face-3">3</div><div class="die-face face-4">4</div><div class="die-face face-5">5</div><div class="die-face face-6"><u>6</u></div>
+                </div>
+                <div class="die" id="die2">
+                    <div class="die-face face-1">1</div><div class="die-face face-2">2</div><div class="die-face face-3">3</div><div class="die-face face-4">4</div><div class="die-face face-5">5</div><div class="die-face face-6"><u>6</u></div>
+                </div>
+                <div class="die" id="die3">
+                    <div class="die-face face-1">1</div><div class="die-face face-2">2</div><div class="die-face face-3">3</div><div class="die-face face-4">4</div><div class="die-face face-5">5</div><div class="die-face face-6"><u>6</u></div>
+                </div>
+                <div class="die" id="die4">
+                    <div class="die-face face-1">1</div><div class="die-face face-2">2</div><div class="die-face face-3">3</div><div class="die-face face-4">4</div><div class="die-face face-5">5</div><div class="die-face face-6"><u>6</u></div>
+                </div>
+            </div>
+            <div id="pair-choices"></div>
+            <div id="action-buttons">
+                <button id="roll-button" disabled>Roll Dice</button>
+                <button id="stop-button" disabled>Stop</button>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Win Screen -->
+    <div id="win-screen">
+        <div class="win-modal">
+            <h2 id="winner-name"></h2>
+            <p>is the winner!</p>
+            <button id="play-again-btn">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const setupScreen = document.getElementById('setup-screen');
+            const playerInputsContainer = document.getElementById('player-inputs');
+            const addPlayerBtn = document.getElementById('add-player-btn');
+            const startGameBtn = document.getElementById('start-game-btn');
+            const gameContainer = document.getElementById('game-container');
+            const board = document.getElementById('board');
+            const playerInfo = document.getElementById('player-info');
+            const gameMessage = document.getElementById('game-message');
+            const diceElements = [document.getElementById('die1'), document.getElementById('die2'), document.getElementById('die3'), document.getElementById('die4')];
+            const pairChoicesContainer = document.getElementById('pair-choices');
+            const rollButton = document.getElementById('roll-button');
+            const stopButton = document.getElementById('stop-button');
+            const winScreen = document.getElementById('win-screen');
+            const winnerNameEl = document.getElementById('winner-name');
+            const playAgainBtn = document.getElementById('play-again-btn');
+
+            // --- Game Configuration ---
+            const PLAYER_COLORS = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71']; // Red, Blue, Yellow, Green
+            const COLUMN_CONFIG = {
+                2: 3, 3: 5, 4: 7, 5: 9, 6: 11, 7: 13, 8: 11, 9: 9, 10: 7, 11: 5, 12: 3
+            };
+
+            // --- Game State ---
+            let gameState = {};
+
+            function resetGameState() {
+                gameState = {
+                    players: [],
+                    currentPlayerIndex: 0,
+                    turnState: 'START', // START, ROLLED, CHOSEN, BUST
+                    dice: [1, 1, 1, 1],
+                    tempMarkers: {}, // { col: progress }
+                    activeTurnColumns: [], // [col1, col2, col3]
+                    boardState: {}, // { col: { playerIndex, progress } }
+                    capturedColumns: {}, // { col: playerIndex }
+                    isGameOver: false,
+                };
+            }
+
+            // --- Setup Logic ---
+            function setup() {
+                addPlayerBtn.addEventListener('click', addPlayerInput);
+                startGameBtn.addEventListener('click', startGame);
+                playAgainBtn.addEventListener('click', () => location.reload());
+                updateAddPlayerButton();
+            }
+
+            function addPlayerInput() {
+                const playerCount = playerInputsContainer.children.length;
+                if (playerCount >= 4) return;
+
+                const newPlayerGroup = document.createElement('div');
+                newPlayerGroup.className = 'player-input-group';
+                newPlayerGroup.innerHTML = `
+                    <input type="text" placeholder="Player ${playerCount + 1} Name" value="Player ${playerCount + 1}">
+                    <button class="remove-player-btn">&times;</button>
+                `;
+                playerInputsContainer.appendChild(newPlayerGroup);
+                newPlayerGroup.querySelector('.remove-player-btn').addEventListener('click', () => {
+                    newPlayerGroup.remove();
+                    updateAddPlayerButton();
+                });
+                updateAddPlayerButton();
+            }
+
+            function updateAddPlayerButton() {
+                const playerCount = playerInputsContainer.children.length;
+                addPlayerBtn.disabled = playerCount >= 4;
+            }
+
+            function startGame() {
+                resetGameState();
+                const inputs = playerInputsContainer.querySelectorAll('input');
+                if (inputs.length < 2) {
+                    alert('You need at least 2 players!');
+                    return;
+                }
+                
+                inputs.forEach((input, index) => {
+                    gameState.players.push({
+                        name: input.value || `Player ${index + 1}`,
+                        color: PLAYER_COLORS[index],
+                        score: 0
+                    });
+                });
+
+                setupScreen.classList.add('hidden');
+                gameContainer.classList.add('visible');
+                
+                initBoard();
+                initPlayerInfo();
+                startTurn();
+            }
+
+            // --- Board and UI Initialization ---
+            function initBoard() {
+                board.innerHTML = '';
+                for (let i = 2; i <= 12; i++) {
+                    const column = document.createElement('div');
+                    column.className = 'column';
+                    column.id = `col-${i}`;
+                    
+                    const label = document.createElement('div');
+                    label.className = 'track-label';
+                    label.textContent = i;
+                    
+                    for (let j = 0; j < COLUMN_CONFIG[i]; j++) {
+                        const space = document.createElement('div');
+                        space.className = 'space';
+                        space.dataset.column = i;
+                        space.dataset.progress = j + 1;
+                        column.appendChild(space);
+                    }
+                    column.appendChild(label);
+                    board.appendChild(column);
+                }
+            }
+
+            function initPlayerInfo() {
+                playerInfo.innerHTML = '';
+                gameState.players.forEach((player, index) => {
+                    const scoreEl = document.createElement('div');
+                    scoreEl.className = 'player-score';
+                    scoreEl.id = `player-score-${index}`;
+                    scoreEl.style.backgroundColor = player.color;
+                    scoreEl.style.color = 'white';
+                    scoreEl.textContent = `${player.name}: 0`;
+                    playerInfo.appendChild(scoreEl);
+                });
+            }
+
+            // --- Game Flow Logic ---
+            function startTurn() {
+                gameState.turnState = 'START';
+                gameState.tempMarkers = {};
+                gameState.activeTurnColumns = [];
+                updateUI();
+            }
+
+            function endTurn() {
+                gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % gameState.players.length;
+                startTurn();
+            }
+
+            function rollDice() {
+                if (gameState.turnState !== 'START' && gameState.turnState !== 'CHOSEN') return;
+                
+                gameState.dice = Array(4).fill(0).map(() => Math.floor(Math.random() * 6) + 1);
+                animateDice();
+                
+                const pairs = getPossiblePairs(gameState.dice);
+                const validMoves = getValidMoves(pairs);
+
+                if (validMoves.length > 0) {
+                    gameState.turnState = 'ROLLED';
+                    displayPairChoices(validMoves);
+                } else {
+                    gameState.turnState = 'BUST';
+                    bust();
+                }
+                updateUI();
+            }
+            
+            function selectFinalMove(colsToAdvance) {
+                colsToAdvance.forEach(col => {
+                    if (!gameState.activeTurnColumns.includes(col)) {
+                        gameState.activeTurnColumns.push(col);
+                    }
+                    const currentProgress = gameState.tempMarkers[col] || (gameState.boardState[col] && gameState.boardState[col].playerIndex === gameState.currentPlayerIndex ? gameState.boardState[col].progress : 0);
+                    gameState.tempMarkers[col] = currentProgress + 1;
+                });
+
+                gameState.turnState = 'CHOSEN';
+                pairChoicesContainer.innerHTML = '';
+                updateUI();
+            }
+            
+            function stopTurn() {
+                // Make temp markers permanent
+                for (const col in gameState.tempMarkers) {
+                    gameState.boardState[col] = {
+                        playerIndex: gameState.currentPlayerIndex,
+                        progress: gameState.tempMarkers[col]
+                    };
+                    // Check for capture
+                    if (gameState.tempMarkers[col] === COLUMN_CONFIG[col]) {
+                        gameState.capturedColumns[col] = gameState.currentPlayerIndex;
+                        const player = gameState.players[gameState.currentPlayerIndex];
+                        player.score++;
+                    }
+                }
+                
+                // Check for win
+                const winner = gameState.players.find(p => p.score >= 3);
+                if (winner) {
+                    gameOver(winner);
+                } else {
+                    endTurn();
+                }
+            }
+            
+            function bust() {
+                gameMessage.textContent = `BUST! Better luck next time.`;
+                pairChoicesContainer.innerHTML = '';
+                setTimeout(endTurn, 1500);
+            }
+
+            function gameOver(winner) {
+                gameState.isGameOver = true;
+                winnerNameEl.textContent = winner.name;
+                winnerNameEl.style.color = winner.color;
+                winScreen.classList.add('visible');
+                updateUI();
+            }
+
+            // --- Helper & Utility Functions ---
+            function getPossiblePairs(dice) {
+                const allPairs = [
+                    [dice[0] + dice[1], dice[2] + dice[3]],
+                    [dice[0] + dice[2], dice[1] + dice[3]],
+                    [dice[0] + dice[3], dice[1] + dice[2]]
+                ];
+                return allPairs.filter(pair => pair[0] >= 2 && pair[0] <= 12 && pair[1] >= 2 && pair[1] <= 12);
+            }
+            
+            // CORRECTED: This is the new, robust move calculation function.
+            function getValidMoves(pairs) {
+                const { activeTurnColumns, capturedColumns } = gameState;
+                const finalMoves = new Map(); // Use a map to store unique moves, key is stringified array.
+
+                for (const pair of pairs) {
+                    const uniqueCols = [...new Set(pair)];
+
+                    const advancingCols = []; // Columns that are already active
+                    const newLanes = [];      // New, potential lanes
+
+                    uniqueCols.forEach(col => {
+                        if (capturedColumns[col] === undefined) {
+                            if (activeTurnColumns.includes(col)) {
+                                advancingCols.push(col);
+                            } else {
+                                newLanes.push(col);
+                            }
+                        }
+                    });
+                    
+                    const slotsAvailable = 3 - activeTurnColumns.length;
+
+                    if (advancingCols.length === 0 && newLanes.length === 0) continue; // Pair is completely unplayable
+
+                    // Case A: We can take all playable parts of the pair without exceeding 3 lanes
+                    if (newLanes.length <= slotsAvailable) {
+                        const move = [...advancingCols, ...newLanes].sort((a, b) => a - b);
+                        if (move.length > 0) {
+                           finalMoves.set(JSON.stringify(move), move);
+                        }
+                    } 
+                    // Case B: We have to choose which new lane to take
+                    else if (slotsAvailable > 0) {
+                        for (const lane of newLanes) {
+                            const move = [...advancingCols, lane].sort((a, b) => a - b);
+                            finalMoves.set(JSON.stringify(move), move);
+                        }
+                    }
+                    // Case C: No slots left, can only advance on existing lanes
+                    else if (advancingCols.length > 0) {
+                        const move = [...advancingCols].sort((a,b) => a - b);
+                        finalMoves.set(JSON.stringify(move), move);
+                    }
+                }
+                return Array.from(finalMoves.values());
+            }
+
+            function displayPairChoices(validMoves) {
+                pairChoicesContainer.innerHTML = '';
+                gameMessage.textContent = 'Choose your path!';
+                
+                if (validMoves.length === 0) {
+                    bust();
+                    return;
+                }
+                
+                validMoves.forEach(move => {
+                    const btn = document.createElement('button');
+                    btn.className = 'choice-btn';
+                    btn.textContent = `Advance on ${move.join(' & ')}`;
+                    btn.onclick = () => selectFinalMove(move);
+                    pairChoicesContainer.appendChild(btn);
+                });
+            }
+
+            // --- UI Update & Animation ---
+            function updateUI() {
+                if (gameState.isGameOver) {
+                    rollButton.disabled = true;
+                    stopButton.disabled = true;
+                    return;
+                }
+                
+                const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+
+                // Update player scores and active state
+                gameState.players.forEach((p, index) => {
+                    const scoreEl = document.getElementById(`player-score-${index}`);
+                    scoreEl.textContent = `${p.name}: ${p.score}`;
+                    if (index === gameState.currentPlayerIndex) {
+                        scoreEl.classList.add('active');
+                    } else {
+                        scoreEl.classList.remove('active');
+                    }
+                });
+
+                // Update buttons
+                rollButton.disabled = !(gameState.turnState === 'START' || gameState.turnState === 'CHOSEN');
+                stopButton.disabled = !(gameState.turnState === 'CHOSEN');
+
+                // Update message
+                if (gameState.turnState === 'START') {
+                    gameMessage.textContent = `${currentPlayer.name}, it's your turn to roll!`;
+                } else if (gameState.turnState === 'ROLLED') {
+                    // Message is now set in displayPairChoices
+                } else if (gameState.turnState === 'CHOSEN') {
+                    gameMessage.textContent = `Press your luck or stop?`;
+                }
+
+                // Clear all markers
+                document.querySelectorAll('.marker').forEach(m => m.remove());
+
+                // Draw permanent markers
+                for (const col in gameState.boardState) {
+                    const { playerIndex, progress } = gameState.boardState[col];
+                    const space = document.querySelector(`.space[data-column='${col}'][data-progress='${progress}']`);
+                    if (space) {
+                        const marker = document.createElement('div');
+                        marker.className = 'marker';
+                        marker.style.backgroundColor = gameState.players[playerIndex].color;
+                        space.appendChild(marker);
+                    }
+                }
+
+                // Draw temp markers
+                for (const col in gameState.tempMarkers) {
+                    const progress = gameState.tempMarkers[col];
+                    const space = document.querySelector(`.space[data-column='${col}'][data-progress='${progress}']`);
+                    if (space) {
+                        const marker = document.createElement('div');
+                        marker.className = 'marker temp-marker';
+                        marker.style.borderColor = currentPlayer.color;
+                        space.appendChild(marker);
+                    }
+                }
+
+                // Update captured columns
+                document.querySelectorAll('.column.captured').forEach(c => {
+                    c.classList.remove('captured');
+                    c.style.backgroundColor = 'transparent';
+                });
+                for (const col in gameState.capturedColumns) {
+                    const playerIndex = gameState.capturedColumns[col];
+                    const colEl = document.getElementById(`col-${col}`);
+                    if (colEl) {
+                        colEl.classList.add('captured');
+                        colEl.style.backgroundColor = `${gameState.players[playerIndex].color}33`; // Faded bg
+                    }
+                }
+            }
+
+            function animateDice() {
+                diceElements.forEach((die, index) => {
+                    const value = gameState.dice[index];
+                    const randomX = (Math.floor(Math.random() * 8) + 4) * 360; // full rotations
+                    const randomY = (Math.floor(Math.random() * 8) + 4) * 360;
+                    
+                    let transform = `rotateX(${randomX}deg) rotateY(${randomY}deg)`;
+                    
+                    if (value === 1) transform += ' rotateY(0deg)';
+                    if (value === 2) transform += ' rotateY(-90deg)';
+                    if (value === 3) transform += ' rotateY(-180deg)';
+                    if (value === 4) transform += ' rotateY(90deg)';
+                    if (value === 5) transform += ' rotateX(-90deg)';
+                    if (value === 6) transform += ' rotateX(90deg)';
+                    
+                    die.style.transform = transform;
+                });
+            }
+
+            // --- Event Listeners ---
+            rollButton.addEventListener('click', rollDice);
+            stopButton.addEventListener('click', stopTurn);
+
+            // --- Initial Call ---
+            setup();
+        });
+    </script>
+</body>
+</html>
