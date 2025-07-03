@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator Puzzle</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- Google Fonts for modern typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS Variables for easy theming --- */
+        :root {
+            --bg-color: #f0f2f5;
+            --calc-bg: #ffffff;
+            --display-bg: #e9ecef;
+            --text-color: #212529;
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --btn-bg: #f8f9fa;
+            --btn-hover-bg: #e2e6ea;
+            --btn-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --btn-hover-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            --win-overlay-bg: rgba(0, 0, 0, 0.7);
+            --win-modal-bg: #fff;
+            --error-color: #dc3545;
+            --star-color: #ffc107;
+        }
+
+        /* --- Base and Layout Styles --- */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        #calc {
+            width: 100%;
+            max-width: 320px;
+            background-color: var(--calc-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* --- Display Screen Styles --- */
+        .display-area {
+            background-color: var(--display-bg);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: right;
+        }
+
+        #num {
+            font-size: 2.5rem;
+            font-weight: 700;
+            min-height: 48px;
+            line-height: 1.2;
+            word-wrap: break-word;
+            transition: color 0.3s ease;
+        }
+
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0 0.5rem;
+        }
+
+        #goal, #mov {
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            background-color: rgba(0,0,0,0.05);
+        }
+
+        /* --- Button Grid and Styles --- */
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+        }
+
+        .btn {
+            font-size: 1.1rem;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            height: 60px;
+            background-color: var(--btn-bg);
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: var(--btn-shadow);
+            transition: all 0.2s ease-in-out;
+            position: relative; /* For tooltip positioning */
+        }
+
+        .btn:hover {
+            background-color: var(--btn-hover-bg);
+            transform: translateY(-3px);
+            box-shadow: var(--btn-hover-shadow);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- Tooltip Styles --- */
+        .btn .tooltip {
+            visibility: hidden;
+            width: 120px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position the tooltip above the button */
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+            font-weight: 400;
+        }
+
+        .btn .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+
+        .btn:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* --- Control Panel (Reset, Difficulty, Nav) --- */
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        #reset {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        #reset:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .difficulty-rating {
+            font-size: 1.2rem;
+            color: var(--star-color);
+        }
+
+        .navigation-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .nav-btn {
+            background: var(--btn-bg);
+            border: 1px solid #dee2e6;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .nav-btn:hover {
+             background-color: var(--btn-hover-bg);
+             box-shadow: var(--btn-shadow);
+        }
+
+        /* --- Visual Feedback --- */
+        .error-shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translateX(-1px); }
+            20%, 80% { transform: translateX(2px); }
+            30%, 50%, 70% { transform: translateX(-4px); }
+            40%, 60% { transform: translateX(4px); }
+        }
+        
+        /* --- Win Modal --- */
+        .win-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--win-overlay-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .win-modal-overlay.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .win-modal {
+            background: var(--win-modal-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        
+        .win-modal-overlay.visible .win-modal {
+            transform: scale(1);
+        }
+
+        .win-modal h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        
+        .win-modal .fa-trophy {
+            font-size: 4rem;
+            color: var(--star-color);
+            margin-bottom: 1rem;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <div id="calc">
+            <div class="display-area">
+                 <div class="info-bar">
+                    <div>Goal: <span id="goal">0</span></div>
+                    <div>Moves: <span id="mov">0</span></div>
+                </div>
+                <div id="num">0</div>
+            </div>
+    
+            <div class="button-grid">
+                <!-- Buttons will be dynamically generated here -->
+                <div id="btn1" class="btn" onclick="btn(1)"></div>
+                <div id="btn2" class="btn" onclick="btn(2)"></div>
+                <div id="btn3" class="btn" onclick="btn(3)"></div>
+                <div id="btn4" class="btn" onclick="btn(4)"></div>
+                <div id="btn5" class="btn" onclick="btn(5)"></div>
+                <div id="btn6" class="btn" onclick="btn(6)"></div>
+                <div id="btn7" class="btn" onclick="btn(7)"></div>
+                <div id="btn8" class="btn" onclick="btn(8)"></div>
+                <div id="btn9" class="btn" onclick="btn(9)"></div>
+            </div>
+    
+            <div class="control-panel">
+                <div id="reset" onclick="reset()">Reset</div>
+                <div class="difficulty-rating">
+                    Difficulty:
+                    <i id="s1" class="fa"></i>
+                    <i id="s2" class="fa"></i>
+                    <i id="s3" class="fa"></i>
+                    <i id="s4" class="fa"></i>
+                    <i id="s5" class="fa"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation-buttons">
+            <button id="prev" class="nav-btn">Previous</button>
+            <button id="easier" class="nav-btn">Easier</button>
+            <button id="harder" class="nav-btn">Harder</button>
+            <button id="next" class="nav-btn">Next</button>
+        </div>
+    </div>
+    
+    <!-- Win Modal Structure -->
+    <div id="winModal" class="win-modal-overlay">
+        <div class="win-modal">
+            <i class="fa fa-trophy"></i>
+            <h2>You Win!</h2>
+            <p>Excellent work solving the puzzle.</p>
+            <button id="nextWin" class="nav-btn">Play Next Puzzle</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js"></script>
+    <script>
+    // --- SETUP AND INITIALIZATION ---
+    var baseurl = location.origin + location.pathname;
+    function findGetParameter(parameterName) {
+        var result = null,
+            tmp = [];
+        var items = location.search.substr(1).split("&");
+        for (var index = 0; index < items.length; index++) {
+            tmp = items[index].split("=");
+            if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+        }
+        return result;
+    }
+    
+    var seed = Number.parseInt(findGetParameter("seed"));
+    var diff = Number.parseInt(findGetParameter("diff") || '10');
+
+    document.querySelector('#easier').onclick = function(){location = baseurl + "?seed=" + seed + "&diff=" + (diff - 1)}
+    document.querySelector('#harder').onclick = function(){location = baseurl + "?seed=" + seed + "&diff=" + (diff + 1)}
+    document.querySelector('#next').onclick = function(){location = baseurl + "?seed=" + (seed + 1) + "&diff=" + (diff)}
+    document.querySelector('#prev').onclick = function(){location = baseurl + "?seed=" + (seed - 1) + "&diff=" + (diff)}
+    document.querySelector('#nextWin').onclick = function(){location = baseurl + "?seed=" + (seed + 1) + "&diff=" + (diff)}
+
+
+    var gminmin = 11-diff;
+    seed = seed?seed:1;
+    var a = new Math.seedrandom(seed);
+    var r = function(min, max, ban){
+        var r = max - min;
+        var x = Math.round(a()*r+min);
+        while(ban && ban.indexOf(x) != -1)
+            x = Math.round(a()*r+min);
+        return x;
+    }
+    
+    // --- OPERATOR DEFINITIONS WITH DESCRIPTIONS ---
+    
+    var add = function(){ this.x = r(-9,10,[0]); }
+    add.prototype.calc = function(x){ var r = x + this.x; if(r < 1000000 && r > -1000000) return r; throw 'overflow error'; }
+    add.prototype.str = function(){return (this.x>=0?"+":"")+this.x}
+    add.prototype.desc = function(){return `Adds ${this.x} to the number.`}
+    
+    var mul = function(x){ this.x = r(-9,10,[0,1]); }
+    mul.prototype.calc = function(x){ var r = x * this.x; if(r < 1000000 && r > -1000000) return r; throw 'overflow error'; }
+    mul.prototype.str = function(){return "*"+(this.x>=0?this.x:"("+this.x+")")}
+    mul.prototype.desc = function(){return `Multiplies the number by ${this.x}.`}
+    
+    var div = function(){ this.x = r(-9,10,[0,1]); }
+    div.prototype.calc = function(x){ if( x % this.x !=0 ) throw 'floating error'; var r = x / this.x; if(r < 1000000 && r > -1000000) return r; throw 'overflow error'; }
+    div.prototype.str = function(){return "/"+(this.x>=0?this.x:"("+this.x+")")}
+    div.prototype.desc = function(){return `Divides the number by ${this.x}. Only works if there is no remainder.`}
+    
+    var del = function(){ btnban.push(fn.indexOf(del)); }
+    del.prototype.calc = function(x){ if(x>-10 && x<10)return 0; var s = ""+x; s = s.substring(0,s.length-1); return Number.parseInt(s) || 0; }
+    del.prototype.str = function(){return "<<"}
+    del.prototype.desc = function(){return `Deletes the last digit.`}
+    
+    var app = function(){ this.x = r(0,9,[]); }
+    app.prototype.calc = function(x){ var s = ""+x; var r=Number.parseInt(s+this.x); if(r < 1000000 && r > -1000000) return r; throw 'overflow error'; }
+    app.prototype.str = function(){return ""+this.x}
+    app.prototype.desc = function(){return `Appends the digit ${this.x} to the end.`}
+    
+    var rev = function(){ btnban.push(fn.indexOf(rev)); }
+    rev.prototype.calc = function(x){ var neg=false; if(x<0){ neg=true; x=-x; } var s = ""+x; s=s.split("").reverse().join(""); s=neg?"-"+s:s; var r=Number.parseInt(s); if(r < 1000000 && r > -1000000) return r; throw 'overflow error'; }
+    rev.prototype.str = function(){return "rev"}
+    rev.prototype.desc = function(){return `Reverses the digits.`}
+    
+    var mir = function(){ btnban.push(fn.indexOf(mir)); }
+    mir.prototype.calc = function(x){ var neg=false; if(x<0){ neg=true; x=-x; } var s = ""+x; s=s+s.split("").reverse().join(""); s=neg?"-"+s:s; var r=Number.parseInt(s); if(r < 1000000 && r > -1000000) return r; throw 'overflow error'; }
+    mir.prototype.str = function(){return "mir"}
+    mir.prototype.desc = function(){return `Mirrors the digits (e.g., 123 -> 123321).`}
+    
+    var sum = function(){ btnban.push(fn.indexOf(sum)); }
+    sum.prototype.calc = function(x){ var neg=false; if(x<0){ neg=true; x=-x; } var s = ""+x; s=s.split("").reduce((a,v)=>Number.parseInt(a)+Number.parseInt(v)); s=neg?"-"+s:s; var r=Number.parseInt(s); if(r < 1000000 && r > -1000000) return r; throw 'overflow error'; }
+    sum.prototype.str = function(){return "sum"}
+    sum.prototype.desc = function(){return `Sums the digits of the number.`}
+    
+    var fn = [add,app,mul,div,del,rev,sum,mir];
+    var btns = [];
+    var btnban = [];
+
+    // --- PUZZLE GENERATION ---
+    for(var i=1; i<10; i++){
+        var fcts = r(0,fn.length-1,btnban);
+        btns[i] = new fn[fcts]();
+        let btnElement = document.getElementById("btn"+i);
+        // Add the button text and the tooltip in one go
+        btnElement.innerHTML = `${btns[i].str()}<span class="tooltip">${btns[i].desc()}</span>`;
+    }
+    document.getElementById("num").innerHTML = seed;
+    
+    var rescnt = [];
+    var stg = [seed];
+    for(var i=0; i<6; i++){
+        var tstg = [];
+        for(var stgi of stg){
+            for(var b=1; b<10; b++){
+                try{
+                    var x = btns[b].calc(stgi);
+                    if(rescnt[x]){
+                        rescnt[x]=rescnt[x]+6-i;
+                    }else{
+                        rescnt[x]=6-i;
+                    }
+                    if(tstg.indexOf(x)==-1)
+                        tstg.push(x);
+                }catch(e){}
+            }
+        }
+        stg=tstg;
+    }
+    var gmin=Number.MAX_VALUE;
+    var goal=0;
+    for(var v =r(-100,0); v<r(50,200); v++){
+        if(rescnt[v]<gminmin) continue;
+        if(rescnt[v]<gmin){
+            gmin=rescnt[v];
+            goal=v;
+        }
+    }
+    
+    // --- UI INTERACTION AND GAME LOGIC ---
+    var numDisplay = document.getElementById("num");
+    var movDisplay = document.getElementById("mov");
+    var goalDisplay = document.getElementById("goal");
+    var winModal = document.getElementById("winModal");
+
+    var btn = function(i){
+        var mov = Number.parseInt(movDisplay.innerHTML);
+        if(mov <= 0 || numDisplay.innerHTML === "ERROR") return;
+
+        var x = Number.parseInt(numDisplay.innerHTML); 
+        try{
+            var result = btns[i].calc(x);
+            numDisplay.innerHTML = result;
+            movDisplay.innerHTML = mov - 1;
+            
+            // Check for win condition
+            if(result == goalDisplay.innerHTML) {
+                winModal.classList.add('visible');
+            } else if (mov - 1 <= 0) {
+                // Optional: Add some feedback for running out of moves
+            }
+
+        } catch(e){
+            // Handle errors with visual feedback instead of freezing
+            var originalNumber = numDisplay.innerHTML;
+            numDisplay.innerHTML = "ERROR";
+            numDisplay.classList.add("error-shake");
+            console.log(e);
+            setTimeout(() => {
+                numDisplay.innerHTML = originalNumber; // Revert to pre-error number
+                numDisplay.classList.remove("error-shake");
+            }, 600);
+        }
+    }
+
+    function reset(){
+        numDisplay.innerHTML = seed;
+        movDisplay.innerHTML = 6;
+        winModal.classList.remove('visible');
+    }
+
+    // --- INITIALIZE UI ---
+    goalDisplay.innerHTML = goal;
+    movDisplay.innerHTML = 6;
+
+    for(var s=1; s<6; s++){
+        var ss = document.getElementById("s"+s);
+        var k = (6-s)*2;
+        if(gmin>k)ss.className = "fa fa-star-o";
+        else if(gmin==k)ss.className = "fa fa-star-half-o";
+        else ss.className = "fa fa-star";
+    }
+    </script>
+
+</body>
+</html>
