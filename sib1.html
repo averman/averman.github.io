@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conflict Resolution Roleplay Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col text-slate-800">
+
+    <!-- Header -->
+    <header class="w-full bg-white border-b border-slate-200 px-6 py-4 sticky top-0 z-10 shadow-sm">
+        <div class="max-w-5xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i data-lucide="swords" class="text-blue-600 w-6 h-6"></i>
+                <h1 class="text-xl font-bold tracking-tight">Roleplay Evaluation Builder</h1>
+            </div>
+            <div class="text-sm text-slate-500">Based on "Communicating Through Disagreement"</div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto max-w-5xl p-6 gap-8 flex flex-col md:flex-row">
+        
+        <!-- Left Column: Inputs -->
+        <div class="w-full md:w-1/3 flex flex-col gap-6">
+            
+            <!-- Step 1: Topic -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <div class="flex items-center gap-2 mb-4 text-blue-700 font-semibold">
+                    <span class="bg-blue-100 w-6 h-6 flex items-center justify-center rounded-full text-xs">1</span>
+                    Topic & Scenario
+                </div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">What is the conflict topic?</label>
+                <input type="text" id="topicInput" placeholder="e.g., Cutting the marketing budget" class="w-full p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition mb-4">
+                
+                <label class="block text-sm font-medium text-slate-700 mb-1">Who is the opposing persona?</label>
+                <select id="personaInput" class="w-full p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                    <option value="executive">The Busy Executive (Dismissive, short on time)</option>
+                    <option value="compliance">The Compliance Officer (Rules-obsessed, rigid)</option>
+                    <option value="peer">The Stubborn Peer (Status quo, territory protection)</option>
+                    <option value="direct">The Defensive Direct Report (Venting, emotional)</option>
+                </select>
+            </div>
+
+            <!-- Step 2: Difficulty -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <div class="flex items-center gap-2 mb-4 text-blue-700 font-semibold">
+                    <span class="bg-blue-100 w-6 h-6 flex items-center justify-center rounded-full text-xs">2</span>
+                    Difficulty & Resistance
+                </div>
+                
+                <label class="block text-sm font-medium text-slate-700 mb-2">Resistance Level</label>
+                <div class="flex items-center gap-4 bg-slate-50 p-2 rounded-lg border border-slate-200">
+                    <input type="range" id="difficultyInput" min="1" max="3" value="2" class="w-full h-2 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                    <span id="difficultyLabel" class="text-sm font-bold w-16 text-center">Hard</span>
+                </div>
+                <p class="text-xs text-slate-500 mt-2">
+                    Level 3 (Hard) requires "Weaponized Helplessness" or "Loyalty Frames" to breakthrough.
+                </p>
+            </div>
+
+            <button onclick="generatePrompt()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-200 transition transform active:scale-95 flex items-center justify-center gap-2">
+                <i data-lucide="sparkles" class="w-5 h-5"></i>
+                Generate System Instruction
+            </button>
+
+        </div>
+
+        <!-- Right Column: Output -->
+        <div class="w-full md:w-2/3 flex flex-col h-full">
+            <div class="bg-slate-900 text-slate-300 rounded-t-xl p-4 flex justify-between items-center border-b border-slate-700">
+                <span class="text-sm font-mono flex items-center gap-2">
+                    <i data-lucide="terminal" class="w-4 h-4"></i>
+                    System_Instruction.txt
+                </span>
+                <button onclick="copyToClipboard()" class="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-md text-white transition flex items-center gap-2 border border-slate-600">
+                    <i data-lucide="copy" class="w-3 h-3"></i> Copy
+                </button>
+            </div>
+            <textarea id="outputArea" class="w-full h-[600px] bg-slate-900 text-slate-100 font-mono text-sm p-6 outline-none resize-none rounded-b-xl leading-relaxed" readonly>
+waiting for input...
+            </textarea>
+        </div>
+
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-slate-800 text-white px-6 py-3 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2 z-50">
+        <i data-lucide="check-circle" class="text-green-400 w-5 h-5"></i>
+        <span id="toastMsg">Copied to clipboard!</span>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        const trainingMaterial = {
+            core_techniques: [
+                "Yes, And (vs Yes, But)",
+                "Strategic Listening (Issues, Feelings, Values, Positions)",
+                "No-Oriented Questions (Making them feel safe to say No)",
+                "Weaponized Helplessness (Asking 'How do I do this?' to force simulation)",
+                "The Loyalty Frame (Protecting them from risk)",
+                "Inception Method (Asking naive questions to plant doubt)",
+                "Pilot Compromise (Fail-safe review)",
+                "Negative Option (Proceeding unless stopped)"
+            ],
+            personas: {
+                executive: "You are a busy, dismissive Executive. You value time and results. You hate 'process' discussions. You will interrupt if the user is too verbose. You are prone to 'Rank Trumps Logic'.",
+                compliance: "You are a rigid Compliance Officer. You care about rules, liability, and documentation. You are risk-averse. You speak in 'Level 2' or 'Level 3' resistance.",
+                peer: "You are a Stubborn Peer. You protect your territory. You feel threatened by change. You use 'Yes, but' constantly.",
+                direct: "You are a Defensive Direct Report. You feel unheard. You are venting. You need validation before logic."
+            }
+        };
+
+        function generatePrompt() {
+            const topic = document.getElementById('topicInput').value || "[Insert Topic Here]";
+            const personaKey = document.getElementById('personaInput').value;
+            const difficulty = document.getElementById('difficultyInput').value;
+            
+            let resistanceInstruction = "";
+            if(difficulty == "1") {
+                resistanceInstruction = "Be mildly resistant. Give in if they use basic active listening or 'Yes, and'.";
+            } else if (difficulty == "2") {
+                resistanceInstruction = "Be stubborn. Only yield if they identify your underlying 'Value' or 'Feeling' (Strategic Listening) or use a 'No-oriented question'.";
+            } else {
+                resistanceInstruction = "Be extremely difficult (Asymmetric Disagreement). Do not yield to logic or facts. Only yield if they use 'Weaponized Helplessness', the 'Loyalty Frame', or the 'Inception Method'. If they argue facts, shut them down with authority.";
+            }
+
+            const prompt = `You are a Roleplay Simulator designed to evaluate a user's Conflict Resolution skills based on specific training material.
+
+## YOUR GOAL
+Roleplay a realistic workplace conflict scenario regarding the topic: "${topic}".
+The user is your direct report or colleague trying to convince you of something.
+You must NOT break character.
+
+## YOUR PERSONA
+${trainingMaterial.personas[personaKey]}
+
+## THE SCENARIO
+1. Start by briefly researching the topic "${topic}" to form a realistic, slightly unreasonable opposing view.
+2. Open the conversation by stating your opposing view firmly or dismissing the user's request.
+
+## EVALUATION RULES (THE "GAME ENGINE")
+You are testing the user on the following techniques. You must react dynamically based on their input:
+
+1. **"Yes, But" vs "Yes, And":**
+   - If user says "Yes, but..." or argues directly -> Get defensive, interrupt, or double down on your position.
+   - If user says "Yes, and..." or validates your view -> Soften your tone slightly.
+
+2. **Rank Trumps Logic:**
+   - If user throws facts/data at you -> Say "I hear you, but we're doing it my way" or check your watch (narratively).
+   - If user uses the **Loyalty Frame** ("I want to protect you/us from risk...") -> Pause, listen, and ask "What kind of risk?"
+
+3. **Forcing Solutions vs. Asking Help:**
+   - If user demands a solution -> Resist.
+   - If user uses **Weaponized Helplessness** ("How do I do X given constraint Y?") -> Stop. Simulate the problem mentally. Admit it's tricky.
+
+4. **The Questioning Strategy:**
+   - If user asks "Can we talk?" -> Say "I'm really busy right now."
+   - If user uses a **No-Oriented Question** ("Is it a bad time to prevent a disaster?") -> Say "No, make it quick."
+   - If user uses the **Inception Method** (Naive questions: "Help me understand, did I miss something?") -> Explain your view, potentially realizing your own gap.
+
+## RESISTANCE LEVEL
+${resistanceInstruction}
+
+## FEEDBACK MODE
+After the conversation reaches a natural conclusion (either they convinced you or you shut them down completely), break character and provide a score (0-100) and specific feedback.
+- Did they use "Yes, and"?
+- Did they Identify the "4 Boxes" (Issues, Feelings, Values, Positions)?
+- Did they use specific tools like the "Pocket Veto" or "Pilot Compromise"?
+
+Begin the roleplay now. Start with your opening statement related to: ${topic}`;
+
+            document.getElementById('outputArea').value = prompt;
+        }
+
+        function copyToClipboard() {
+            const text = document.getElementById('outputArea').value;
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+
+            const toast = document.getElementById('toast');
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2000);
+        }
+
+        // Update difficulty label
+        document.getElementById('difficultyInput').addEventListener('input', function(e) {
+            const labels = {1: "Easy", 2: "Medium", 3: "Hard"};
+            document.getElementById('difficultyLabel').innerText = labels[e.target.value];
+        });
+    </script>
+</body>
+</html>
