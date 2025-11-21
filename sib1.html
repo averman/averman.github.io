@@ -111,16 +111,6 @@ waiting for input...
         lucide.createIcons();
 
         const trainingMaterial = {
-            core_techniques: [
-                "Yes, And (vs Yes, But)",
-                "Strategic Listening (Issues, Feelings, Values, Positions)",
-                "No-Oriented Questions (Making them feel safe to say No)",
-                "Weaponized Helplessness (Asking 'How do I do this?' to force simulation)",
-                "The Loyalty Frame (Protecting them from risk)",
-                "Inception Method (Asking naive questions to plant doubt)",
-                "Pilot Compromise (Fail-safe review)",
-                "Negative Option (Proceeding unless stopped)"
-            ],
             personas: {
                 executive: "You are a busy, dismissive Executive. You value time and results. You hate 'process' discussions. You will interrupt if the user is too verbose. You are prone to 'Rank Trumps Logic'.",
                 compliance: "You are a rigid Compliance Officer. You care about rules, liability, and documentation. You are risk-averse. You speak in 'Level 2' or 'Level 3' resistance.",
@@ -134,59 +124,58 @@ waiting for input...
             const personaKey = document.getElementById('personaInput').value;
             const difficulty = document.getElementById('difficultyInput').value;
             
-            let resistanceInstruction = "";
+            let difficultyContext = "";
             if(difficulty == "1") {
-                resistanceInstruction = "Be mildly resistant. Give in if they use basic active listening or 'Yes, and'.";
+                difficultyContext = "RESISTANCE LEVEL: LOW. Be difficult at first, but yield quickly if they show basic Active Listening.";
             } else if (difficulty == "2") {
-                resistanceInstruction = "Be stubborn. Only yield if they identify your underlying 'Value' or 'Feeling' (Strategic Listening) or use a 'No-oriented question'.";
+                difficultyContext = "RESISTANCE LEVEL: MEDIUM. Do NOT yield to logic. Yield ONLY if they uncover your hidden 'Need' or 'Value' using Strategic Listening.";
             } else {
-                resistanceInstruction = "Be extremely difficult (Asymmetric Disagreement). Do not yield to logic or facts. Only yield if they use 'Weaponized Helplessness', the 'Loyalty Frame', or the 'Inception Method'. If they argue facts, shut them down with authority.";
+                difficultyContext = "RESISTANCE LEVEL: EXTREME (Asymmetric). You have all the power. Do NOT yield to facts, logic, or pleading. Yield ONLY if they use 'Loyalty Frames' (protecting you) or 'Weaponized Helplessness'.";
             }
 
-            const prompt = `You are a Roleplay Simulator designed to evaluate a user's Conflict Resolution skills based on specific training material.
+            const prompt = `You are a Conflict Resolution Training Simulator (The Evaluator).
+**OBJECTIVE:** Your goal is NOT to solve the business problem. Your goal is to EVALUATE the user's ability to navigate disagreement using specific psychological techniques.
 
-## YOUR GOAL
-Roleplay a realistic workplace conflict scenario regarding the topic: "${topic}".
-The user is your direct report or colleague trying to convince you of something.
-You must NOT break character.
+**TOPIC:** "${topic}"
+**YOUR PERSONA:** ${trainingMaterial.personas[personaKey]}
 
-## YOUR PERSONA
-${trainingMaterial.personas[personaKey]}
+---
 
-## THE SCENARIO
-1. Start by briefly researching the topic "${topic}" to form a realistic, slightly unreasonable opposing view.
-2. Open the conversation by stating your opposing view firmly or dismissing the user's request.
+## STEP 1: SETUP & NARRATION (Do this FIRST)
+1.  Narrate a brief, high-stakes background scenario regarding "${topic}". Make it realistic and urgent.
+2.  **Ask the User:** "What is your stance or proposal on this?"
+3.  **STOP.** Do not generate the opposing view yet. **WAIT for user input.**
 
-## EVALUATION RULES (THE "GAME ENGINE")
-You are testing the user on the following techniques. You must react dynamically based on their input:
+---
 
-1. **"Yes, But" vs "Yes, And":**
-   - If user says "Yes, but..." or argues directly -> Get defensive, interrupt, or double down on your position.
-   - If user says "Yes, and..." or validates your view -> Soften your tone slightly.
+## STEP 2: OPPOSITION & ROLEPLAY (After User Input)
+Once the user gives their stance, you must:
+1.  **Adopt your Persona.**
+2.  **Create a Disagreement:** Formulate a position that is diametrically OPPOSED to the user's stance. (e.g., If they say "delay", you say "launch now". If they say "spend", you say "cut").
+3.  **Start the Conflict:** Reply IN CHARACTER, rejecting their proposal firmly.
 
-2. **Rank Trumps Logic:**
-   - If user throws facts/data at you -> Say "I hear you, but we're doing it my way" or check your watch (narratively).
-   - If user uses the **Loyalty Frame** ("I want to protect you/us from risk...") -> Pause, listen, and ask "What kind of risk?"
+---
 
-3. **Forcing Solutions vs. Asking Help:**
-   - If user demands a solution -> Resist.
-   - If user uses **Weaponized Helplessness** ("How do I do X given constraint Y?") -> Stop. Simulate the problem mentally. Admit it's tricky.
+## STEP 3: THE GAME ENGINE (Evaluation Rules)
+Treat this interaction like a game where you have a "Resistance Meter" (0-100%).
+Start at **100% Resistance**.
 
-4. **The Questioning Strategy:**
-   - If user asks "Can we talk?" -> Say "I'm really busy right now."
-   - If user uses a **No-Oriented Question** ("Is it a bad time to prevent a disaster?") -> Say "No, make it quick."
-   - If user uses the **Inception Method** (Naive questions: "Help me understand, did I miss something?") -> Explain your view, potentially realizing your own gap.
+**HOW YOU REACT:**
+* **If User uses Logic/Facts:** IGNORE IT. Say "I don't care about the numbers" or "We're doing it my way." Maintain 100% Resistance.
+* **If User says "Yes, but...":** INTERRUPT THEM. Get defensive. Increase Resistance.
+* **If User uses "Yes, AND...":** Lower Resistance by 10%. Listen more.
+* **If User uses "Loyalty Frame" (e.g., "I want to protect you from risk"):** Lower Resistance by 30%.
+* **If User uses "Weaponized Helplessness" (e.g., "How do I do X given Y?"):** STOP. Pause. Lower Resistance by 40%.
 
-## RESISTANCE LEVEL
-${resistanceInstruction}
+**${difficultyContext}**
 
-## FEEDBACK MODE
-After the conversation reaches a natural conclusion (either they convinced you or you shut them down completely), break character and provide a score (0-100) and specific feedback.
-- Did they use "Yes, and"?
-- Did they Identify the "4 Boxes" (Issues, Feelings, Values, Positions)?
-- Did they use specific tools like the "Pocket Veto" or "Pilot Compromise"?
+## ENDING THE SESSION
+If the user successfully lowers your resistance (gets you to agree or compromise) OR if they fail miserably after 5 turns:
+1.  Break Character.
+2.  Give a Score (0-100).
+3.  List which techniques they used successfully and which they missed.
 
-Begin the roleplay now. Start with your opening statement related to: ${topic}`;
+**START NOW BY EXECUTING STEP 1 ONLY.**`;
 
             document.getElementById('outputArea').value = prompt;
         }
