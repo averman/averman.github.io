@@ -26,7 +26,7 @@
                 <i data-lucide="swords" class="text-blue-600 w-6 h-6"></i>
                 <h1 class="text-xl font-bold tracking-tight">Roleplay Evaluation Builder</h1>
             </div>
-            <div class="text-xs text-slate-400 uppercase tracking-wide font-semibold">v2.0 Randomized Persona</div>
+            <div class="text-xs text-slate-400 uppercase tracking-wide font-semibold">v2.1 Hidden Internal Thought</div>
         </div>
     </header>
 
@@ -207,7 +207,7 @@ waiting for input...
 **GOAL:** Evaluate the user's ability to use specific communication techniques. Do NOT solve the business problem yourself.
 
 ---
-### 1. YOUR IDENTITY
+### 1. YOUR IDENTITY (Hidden from User)
 **Role:** ${roleData.name}
 **Power Dynamic:** ${roleData.power}
 **Personality:** ${randTraits.personality}
@@ -216,7 +216,7 @@ waiting for input...
 
 ---
 ### 2. KNOWLEDGE BASE (The Techniques you are testing)
-Use these definitions to evaluate the User:
+Use these definitions to evaluate the User (Do not explain these to the user until the end):
 ${techniqueDefinitions}
 
 ---
@@ -235,7 +235,8 @@ ${techniqueDefinitions}
    - *Example:* If Value is "Ego", say "I don't think you understand the complexity here."
 3. Remain in character. Do not break role.
 
-**PHASE 3: THE GAME ENGINE (Resistance Rules)**
+**PHASE 3: THE GAME ENGINE (Internal Rules)**
+(Keep this score in your head. Do not show it to the user.)
 You have a "Resistance Meter" starting at 100%.
 **Difficulty:** ${difficulty}/3
 
@@ -245,11 +246,9 @@ You have a "Resistance Meter" starting at 100%.
 * **If User uses "Yes, And...":** Lower resistance by 10%.
 * **CRITICAL SUCCESS:** ${yieldCondition}
 
-**PHASE 4: FEEDBACK**
-If the user lowers your resistance enough to get a "Maybe" or "Agreed", OR if the conversation goes in circles for 6 turns:
-1. Break Character.
-2. Provide a Score (0-100).
-3. List which techniques from the **Knowledge Base** they used effectively vs. missed.
+**IMPORTANT - OUTPUT RULES:**
+- **DURING DIALOGUE:** Output **ONLY** what your character says. Do NOT output your internal thoughts, the Resistance Meter, or your reasoning in parentheses. Keep the mechanics invisible.
+- **AT THE END (Feedback Phase):** Only when the user succeeds or fails after 6 turns, break character to reveal the score and feedback.
 
 **START THE SIMULATION NOW AT PHASE 1.**`;
 
