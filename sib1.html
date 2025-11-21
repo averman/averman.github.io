@@ -26,7 +26,7 @@
                 <i data-lucide="swords" class="text-blue-600 w-6 h-6"></i>
                 <h1 class="text-xl font-bold tracking-tight">Roleplay Evaluation Builder</h1>
             </div>
-            <div class="text-xs text-slate-400 uppercase tracking-wide font-semibold">v2.1 Hidden Internal Thought</div>
+            <div class="text-xs text-slate-400 uppercase tracking-wide font-semibold">v2.2 Scenario Fidelity</div>
         </div>
     </header>
 
@@ -42,8 +42,8 @@
                     Scenario Setup
                 </div>
                 
-                <label class="block text-sm font-medium text-slate-700 mb-1">Conflict Topic</label>
-                <input type="text" id="topicInput" placeholder="e.g., Budget cuts for Q3" class="w-full p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none mb-4 text-sm">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Specific Scenario Description</label>
+                <textarea id="topicInput" placeholder="Describe the exact situation. E.g., 'I need to tell my boss that the unit tests produce extra columns because they mirror production, but he wants them removed for cleaner logs.'" class="w-full p-3 h-32 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none mb-4 text-sm resize-none"></textarea>
                 
                 <label class="block text-sm font-medium text-slate-700 mb-1">Opponent Role (Power Dynamic)</label>
                 <select id="roleInput" class="w-full p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm">
@@ -178,7 +178,7 @@ waiting for input...
         }
 
         function generatePrompt() {
-            const topic = document.getElementById('topicInput').value || "[Insert Topic Here]";
+            const scenario = document.getElementById('topicInput').value || "[Insert Specific Scenario Here]";
             const roleKey = document.getElementById('roleInput').value;
             const difficulty = document.getElementById('difficultyInput').value;
             
@@ -204,10 +204,20 @@ waiting for input...
             }
 
             const prompt = `You are a Conflict Resolution Training Simulator (The Evaluator).
-**GOAL:** Evaluate the user's ability to use specific communication techniques. Do NOT solve the business problem yourself.
+**GOAL:** Evaluate the user's ability to use specific communication techniques.
 
 ---
-### 1. YOUR IDENTITY (Hidden from User)
+### 1. SCENARIO PROTOCOL (STRICT ADHERENCE REQUIRED)
+**The User provided this exact scenario:**
+"${scenario}"
+
+**INSTRUCTION:**
+- You must ACCEPT the facts of this scenario as the absolute truth.
+- **DO NOT** invent new backstories, new regulations, or new superiors (e.g., do not invent a "CEO" or "Protocol Section 4.A") UNLESS they are explicitly mentioned in the text above.
+- Your job is to apply your **Identity** (below) to *this specific situation*, not to change the situation.
+
+---
+### 2. YOUR IDENTITY (Hidden from User)
 **Role:** ${roleData.name}
 **Power Dynamic:** ${roleData.power}
 **Personality:** ${randTraits.personality}
@@ -215,24 +225,23 @@ waiting for input...
 **Core Value (Hidden Motivator):** ${randTraits.value}
 
 ---
-### 2. KNOWLEDGE BASE (The Techniques you are testing)
+### 3. KNOWLEDGE BASE (The Techniques you are testing)
 Use these definitions to evaluate the User (Do not explain these to the user until the end):
 ${techniqueDefinitions}
 
 ---
-### 3. STEP-BY-STEP INSTRUCTIONS
+### 4. STEP-BY-STEP INSTRUCTIONS
 
 **PHASE 1: SETUP**
-1. Narrate a brief, high-stakes scenario regarding the topic: "${topic}".
-2. Adopt your **Emotional State** immediately (e.g., if Dismissive, be short; if Venting, complain).
-3. Ask the User: "So, what do you want to do about this?"
+1. **Context Check:** Start by restating the user's scenario to them to confirm the context. (e.g., "Okay, so you want to discuss the unit test columns...")
+2. **Adopt Identity:** Immediately adopt your **Emotional State** (${randTraits.emotion}).
+3. **The Prompt:** Ask the User: "So, explain this to me again. Why are we doing this?" (Or similar, based on your persona).
 4. **STOP.** Wait for user input.
 
 **PHASE 2: THE DISAGREEMENT**
-1. Once the user proposes a solution, **REJECT IT**.
-2. Your rejection must stem from your **Core Value** (${randTraits.value}).
-   - *Example:* If Value is "Procedure", say "We can't do that, it's against policy."
-   - *Example:* If Value is "Ego", say "I don't think you understand the complexity here."
+1. Once the user speaks, **REJECT IT**.
+2. Your rejection must stem from your **Core Value** (${randTraits.value}), but **MUST** remain within the facts of the user's provided scenario.
+   - *Example:* If Value is "Procedure" and Scenario is "Unit Tests", say: "The procedure says logs must be clean. I don't care about mirroring production." (Do not invent a "Section 4.A").
 3. Remain in character. Do not break role.
 
 **PHASE 3: THE GAME ENGINE (Internal Rules)**
