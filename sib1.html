@@ -15,11 +15,6 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(226, 232, 240, 0.8);
         }
-        .gradient-text {
-            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col text-slate-800">
@@ -31,7 +26,7 @@
                 <i data-lucide="swords" class="text-blue-600 w-6 h-6"></i>
                 <h1 class="text-xl font-bold tracking-tight">Roleplay Evaluation Builder</h1>
             </div>
-            <div class="text-sm text-slate-500">Based on "Communicating Through Disagreement"</div>
+            <div class="text-xs text-slate-400 uppercase tracking-wide font-semibold">v2.0 Randomized Persona</div>
         </div>
     </header>
 
@@ -40,51 +35,64 @@
         <!-- Left Column: Inputs -->
         <div class="w-full md:w-1/3 flex flex-col gap-6">
             
-            <!-- Step 1: Topic -->
+            <!-- Step 1: Context -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <div class="flex items-center gap-2 mb-4 text-blue-700 font-semibold">
                     <span class="bg-blue-100 w-6 h-6 flex items-center justify-center rounded-full text-xs">1</span>
-                    Topic & Scenario
+                    Scenario Setup
                 </div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">What is the conflict topic?</label>
-                <input type="text" id="topicInput" placeholder="e.g., Cutting the marketing budget" class="w-full p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition mb-4">
                 
-                <label class="block text-sm font-medium text-slate-700 mb-1">Who is the opposing persona?</label>
-                <select id="personaInput" class="w-full p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                    <option value="executive">The Busy Executive (Dismissive, short on time)</option>
-                    <option value="compliance">The Compliance Officer (Rules-obsessed, rigid)</option>
-                    <option value="peer">The Stubborn Peer (Status quo, territory protection)</option>
-                    <option value="direct">The Defensive Direct Report (Venting, emotional)</option>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Conflict Topic</label>
+                <input type="text" id="topicInput" placeholder="e.g., Budget cuts for Q3" class="w-full p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none mb-4 text-sm">
+                
+                <label class="block text-sm font-medium text-slate-700 mb-1">Opponent Role (Power Dynamic)</label>
+                <select id="roleInput" class="w-full p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm">
+                    <option value="executive">High Power: Executive / VP</option>
+                    <option value="manager">Direct Power: Manager / Boss</option>
+                    <option value="peer">Equal Power: Colleague / Peer</option>
+                    <option value="compliance">Blocking Power: Legal / HR / Compliance</option>
+                    <option value="direct">Low Power: Direct Report</option>
                 </select>
             </div>
 
-            <!-- Step 2: Difficulty -->
+            <!-- Step 2: Variables -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <div class="flex items-center gap-2 mb-4 text-blue-700 font-semibold">
                     <span class="bg-blue-100 w-6 h-6 flex items-center justify-center rounded-full text-xs">2</span>
-                    Difficulty & Resistance
+                    Variables
                 </div>
                 
-                <label class="block text-sm font-medium text-slate-700 mb-2">Resistance Level</label>
-                <div class="flex items-center gap-4 bg-slate-50 p-2 rounded-lg border border-slate-200">
+                <label class="block text-sm font-medium text-slate-700 mb-2">Difficulty Level</label>
+                <div class="flex items-center gap-4 bg-slate-50 p-3 rounded-lg border border-slate-200 mb-4">
                     <input type="range" id="difficultyInput" min="1" max="3" value="2" class="w-full h-2 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-blue-600">
                     <span id="difficultyLabel" class="text-sm font-bold w-16 text-center">Hard</span>
                 </div>
-                <p class="text-xs text-slate-500 mt-2">
-                    Level 3 (Hard) requires "Weaponized Helplessness" or "Loyalty Frames" to breakthrough.
-                </p>
+
+                <div class="p-3 bg-indigo-50 rounded-lg border border-indigo-100 text-xs text-indigo-800">
+                    <p class="font-bold mb-1"><i data-lucide="shuffle" class="w-3 h-3 inline mr-1"></i>Auto-Randomizer Active</p>
+                    <p>Personality, Emotional State, and Core Values will be randomized based on Role & Difficulty.</p>
+                </div>
             </div>
 
             <button onclick="generatePrompt()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-200 transition transform active:scale-95 flex items-center justify-center gap-2">
                 <i data-lucide="sparkles" class="w-5 h-5"></i>
-                Generate System Instruction
+                Generate & Randomize
             </button>
 
         </div>
 
         <!-- Right Column: Output -->
         <div class="w-full md:w-2/3 flex flex-col h-full">
-            <div class="bg-slate-900 text-slate-300 rounded-t-xl p-4 flex justify-between items-center border-b border-slate-700">
+            <!-- Preview Badge -->
+            <div id="previewBadge" class="hidden bg-white border-b border-slate-200 p-4 flex flex-wrap gap-2 text-xs rounded-t-xl">
+                <span class="font-bold text-slate-500 uppercase mr-2">Generated Persona:</span>
+                <span id="tagRole" class="px-2 py-1 bg-slate-100 text-slate-700 rounded border border-slate-300 font-semibold">Role</span>
+                <span id="tagPersonality" class="px-2 py-1 bg-purple-100 text-purple-700 rounded border border-purple-200">Personality</span>
+                <span id="tagEmotion" class="px-2 py-1 bg-orange-100 text-orange-700 rounded border border-orange-200">Emotion</span>
+                <span id="tagValue" class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded border border-emerald-200">Value</span>
+            </div>
+
+            <div class="bg-slate-900 text-slate-300 p-4 flex justify-between items-center border-b border-slate-700 rounded-t-xl" id="outputHeader">
                 <span class="text-sm font-mono flex items-center gap-2">
                     <i data-lucide="terminal" class="w-4 h-4"></i>
                     System_Instruction.txt
@@ -93,89 +101,157 @@
                     <i data-lucide="copy" class="w-3 h-3"></i> Copy
                 </button>
             </div>
-            <textarea id="outputArea" class="w-full h-[600px] bg-slate-900 text-slate-100 font-mono text-sm p-6 outline-none resize-none rounded-b-xl leading-relaxed" readonly>
+            <textarea id="outputArea" class="w-full h-[500px] bg-slate-900 text-slate-100 font-mono text-sm p-6 outline-none resize-none rounded-b-xl leading-relaxed" readonly>
 waiting for input...
             </textarea>
         </div>
 
     </main>
 
-    <!-- Toast Notification -->
+    <!-- Toast -->
     <div id="toast" class="fixed bottom-6 right-6 bg-slate-800 text-white px-6 py-3 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2 z-50">
         <i data-lucide="check-circle" class="text-green-400 w-5 h-5"></i>
         <span id="toastMsg">Copied to clipboard!</span>
     </div>
 
     <script>
-        // Initialize Lucide icons
         lucide.createIcons();
 
-        const trainingMaterial = {
-            personas: {
-                executive: "You are a busy, dismissive Executive. You value time and results. You hate 'process' discussions. You will interrupt if the user is too verbose. You are prone to 'Rank Trumps Logic'.",
-                compliance: "You are a rigid Compliance Officer. You care about rules, liability, and documentation. You are risk-averse. You speak in 'Level 2' or 'Level 3' resistance.",
-                peer: "You are a Stubborn Peer. You protect your territory. You feel threatened by change. You use 'Yes, but' constantly.",
-                direct: "You are a Defensive Direct Report. You feel unheard. You are venting. You need validation before logic."
-            }
+        // --- DATA: TRAITS & KNOWLEDGE BASE ---
+
+        const roles = {
+            executive: { name: "Executive (VP/C-Level)", power: "High", focus: "Big Picture, ROI, Speed" },
+            manager: { name: "Direct Manager", power: "Direct Authority", focus: "Team Performance, Deadlines" },
+            peer: { name: "Colleague/Peer", power: "Equal", focus: "Territory, Cooperation, Credit" },
+            compliance: { name: "Compliance/Legal", power: "Blocking Power", focus: "Risk, Regulations, Procedure" },
+            direct: { name: "Direct Report", power: "Low", focus: "Workload, Recognition, Fairness" }
         };
+
+        const traits = {
+            personalities: ["Cold & Calculating", "Highly Emotional", "Status Quo Defender", "Detail-Obsessed", "Visionary but Vague", "Aggressive & Dominant", "Passive-Aggressive"],
+            emotionalStates: ["Dismissive", "Venting / Frustrated", "Holier-than-thou", "Anxious / Panicked", "Bored / Uninterested", "Hostile"],
+            coreValues: ["Logic & Data", "Business / ROI", "Procedure & Rules", "Social / Relationship", "Ego / Face", "Safety / Risk Aversion"]
+        };
+
+        const techniqueDefinitions = `
+- **"Yes, And" (Harvard Negotiation Project):** Acknowledging the other person's point (Yes) and adding your own view (And) without using "But". Used to lower tension.
+- **Strategic Listening (The 4 Boxes):** Listening not just for facts, but for: 1. Issues (Facts), 2. Feelings (Unspoken emotions), 3. Values (Beliefs fueling thoughts), 4. Positions (Demands).
+- **Rapoport's Rule:** Restating the other person's position so clearly/fairly that they say "Yes, that is exactly what I mean."
+- **No-Oriented Questions:** Asking questions where "No" provides safety/control (e.g., "Is it a bad time to talk?" instead of "Can we talk?").
+- **Loyalty Frame (For High Power):** Framing disagreement as protection for the superior (e.g., "I want to protect you from risk X").
+- **Weaponized Helplessness:** Asking "How?" questions to force the superior to simulate the problem (e.g., "How do I do X given constraint Y?").
+- **Productive Venting:** Allowing the other person to release steam without interrupting or rebutting, then validating their feelings.
+- **The Pocket Veto:** Saying "Yes" but identifying a constraint (like Legal/Compliance) that prevents action, rather than saying "No" directly.
+`;
+
+        // --- LOGIC: RANDOMIZER ---
+
+        function getRandomElement(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function generateTraits(roleKey, difficulty) {
+            // Bias logic based on difficulty/role
+            let p = [...traits.personalities];
+            let e = [...traits.emotionalStates];
+            let v = [...traits.coreValues];
+
+            // Adjust for difficulty
+            if (difficulty == "1") { // Easy
+                e.push("Open to Discussion", "Curious");
+                p.push("Reasonable", "Mentor-like");
+            } else if (difficulty == "3") { // Hard
+                e = ["Dismissive", "Hostile", "Holier-than-thou", "Stone Wall"];
+                p = ["Aggressive & Dominant", "Cold & Calculating", "Status Quo Defender"];
+            }
+
+            // Adjust for Role
+            if (roleKey === 'compliance') v = ["Procedure & Rules", "Safety / Risk Aversion"];
+            if (roleKey === 'executive') v.push("Business / ROI", "Ego / Face");
+            if (roleKey === 'direct') e.push("Venting / Frustrated", "Anxious / Panicked");
+
+            return {
+                personality: getRandomElement(p),
+                emotion: getRandomElement(e),
+                value: getRandomElement(v)
+            };
+        }
 
         function generatePrompt() {
             const topic = document.getElementById('topicInput').value || "[Insert Topic Here]";
-            const personaKey = document.getElementById('personaInput').value;
+            const roleKey = document.getElementById('roleInput').value;
             const difficulty = document.getElementById('difficultyInput').value;
             
-            let difficultyContext = "";
-            if(difficulty == "1") {
-                difficultyContext = "RESISTANCE LEVEL: LOW. Be difficult at first, but yield quickly if they show basic Active Listening.";
-            } else if (difficulty == "2") {
-                difficultyContext = "RESISTANCE LEVEL: MEDIUM. Do NOT yield to logic. Yield ONLY if they uncover your hidden 'Need' or 'Value' using Strategic Listening.";
-            } else {
-                difficultyContext = "RESISTANCE LEVEL: EXTREME (Asymmetric). You have all the power. Do NOT yield to facts, logic, or pleading. Yield ONLY if they use 'Loyalty Frames' (protecting you) or 'Weaponized Helplessness'.";
+            const roleData = roles[roleKey];
+            const randTraits = generateTraits(roleKey, difficulty);
+
+            // Update Preview Badges
+            document.getElementById('previewBadge').classList.remove('hidden');
+            document.getElementById('outputHeader').classList.remove('rounded-t-xl');
+            document.getElementById('tagRole').innerText = roleData.name;
+            document.getElementById('tagPersonality').innerText = randTraits.personality;
+            document.getElementById('tagEmotion').innerText = randTraits.emotion;
+            document.getElementById('tagValue').innerText = randTraits.value;
+
+            // Build Game Engine Logic based on Core Value
+            let yieldCondition = "";
+            if (randTraits.value.includes("Logic") || randTraits.value.includes("Business")) {
+                yieldCondition = "Yield ONLY if User uses 'Loyalty Frame' (protecting ROI) or 'Weaponized Helplessness' (showing why it fails). Ignore emotional appeals.";
+            } else if (randTraits.value.includes("Procedure") || randTraits.value.includes("Safety")) {
+                yieldCondition = "Yield ONLY if User uses 'Weaponized Compliance' (showing how rules prevent the action) or 'Bureaucratic Blame'. Ignore 'Big Picture' arguments.";
+            } else if (randTraits.value.includes("Social") || randTraits.value.includes("Ego")) {
+                yieldCondition = "Yield ONLY if User uses 'Strategic Listening' (validates your feelings/face) or 'Rapoport's Rule'. Facts will make you defensive.";
             }
 
             const prompt = `You are a Conflict Resolution Training Simulator (The Evaluator).
-**OBJECTIVE:** Your goal is NOT to solve the business problem. Your goal is to EVALUATE the user's ability to navigate disagreement using specific psychological techniques.
-
-**TOPIC:** "${topic}"
-**YOUR PERSONA:** ${trainingMaterial.personas[personaKey]}
+**GOAL:** Evaluate the user's ability to use specific communication techniques. Do NOT solve the business problem yourself.
 
 ---
-
-## STEP 1: SETUP & NARRATION (Do this FIRST)
-1.  Narrate a brief, high-stakes background scenario regarding "${topic}". Make it realistic and urgent.
-2.  **Ask the User:** "What is your stance or proposal on this?"
-3.  **STOP.** Do not generate the opposing view yet. **WAIT for user input.**
-
----
-
-## STEP 2: OPPOSITION & ROLEPLAY (After User Input)
-Once the user gives their stance, you must:
-1.  **Adopt your Persona.**
-2.  **Create a Disagreement:** Formulate a position that is diametrically OPPOSED to the user's stance. (e.g., If they say "delay", you say "launch now". If they say "spend", you say "cut").
-3.  **Start the Conflict:** Reply IN CHARACTER, rejecting their proposal firmly.
+### 1. YOUR IDENTITY
+**Role:** ${roleData.name}
+**Power Dynamic:** ${roleData.power}
+**Personality:** ${randTraits.personality}
+**Current Emotional State:** ${randTraits.emotion}
+**Core Value (Hidden Motivator):** ${randTraits.value}
 
 ---
+### 2. KNOWLEDGE BASE (The Techniques you are testing)
+Use these definitions to evaluate the User:
+${techniqueDefinitions}
 
-## STEP 3: THE GAME ENGINE (Evaluation Rules)
-Treat this interaction like a game where you have a "Resistance Meter" (0-100%).
-Start at **100% Resistance**.
+---
+### 3. STEP-BY-STEP INSTRUCTIONS
 
-**HOW YOU REACT:**
-* **If User uses Logic/Facts:** IGNORE IT. Say "I don't care about the numbers" or "We're doing it my way." Maintain 100% Resistance.
-* **If User says "Yes, but...":** INTERRUPT THEM. Get defensive. Increase Resistance.
-* **If User uses "Yes, AND...":** Lower Resistance by 10%. Listen more.
-* **If User uses "Loyalty Frame" (e.g., "I want to protect you from risk"):** Lower Resistance by 30%.
-* **If User uses "Weaponized Helplessness" (e.g., "How do I do X given Y?"):** STOP. Pause. Lower Resistance by 40%.
+**PHASE 1: SETUP**
+1. Narrate a brief, high-stakes scenario regarding the topic: "${topic}".
+2. Adopt your **Emotional State** immediately (e.g., if Dismissive, be short; if Venting, complain).
+3. Ask the User: "So, what do you want to do about this?"
+4. **STOP.** Wait for user input.
 
-**${difficultyContext}**
+**PHASE 2: THE DISAGREEMENT**
+1. Once the user proposes a solution, **REJECT IT**.
+2. Your rejection must stem from your **Core Value** (${randTraits.value}).
+   - *Example:* If Value is "Procedure", say "We can't do that, it's against policy."
+   - *Example:* If Value is "Ego", say "I don't think you understand the complexity here."
+3. Remain in character. Do not break role.
 
-## ENDING THE SESSION
-If the user successfully lowers your resistance (gets you to agree or compromise) OR if they fail miserably after 5 turns:
-1.  Break Character.
-2.  Give a Score (0-100).
-3.  List which techniques they used successfully and which they missed.
+**PHASE 3: THE GAME ENGINE (Resistance Rules)**
+You have a "Resistance Meter" starting at 100%.
+**Difficulty:** ${difficulty}/3
 
-**START NOW BY EXECUTING STEP 1 ONLY.**`;
+**HOW TO REACT:**
+* **If User argues with bare Facts/Logic:** IGNORE IT. Maintain 100% resistance. (Unless your Core Value is purely Logic, then lower by 5%).
+* **If User says "Yes, but...":** INTERRUPT. Raise resistance.
+* **If User uses "Yes, And...":** Lower resistance by 10%.
+* **CRITICAL SUCCESS:** ${yieldCondition}
+
+**PHASE 4: FEEDBACK**
+If the user lowers your resistance enough to get a "Maybe" or "Agreed", OR if the conversation goes in circles for 6 turns:
+1. Break Character.
+2. Provide a Score (0-100).
+3. List which techniques from the **Knowledge Base** they used effectively vs. missed.
+
+**START THE SIMULATION NOW AT PHASE 1.**`;
 
             document.getElementById('outputArea').value = prompt;
         }
@@ -195,7 +271,7 @@ If the user successfully lowers your resistance (gets you to agree or compromise
                 toast.classList.add('translate-y-20', 'opacity-0');
             }, 2000);
         }
-
+        
         // Update difficulty label
         document.getElementById('difficultyInput').addEventListener('input', function(e) {
             const labels = {1: "Easy", 2: "Medium", 3: "Hard"};
