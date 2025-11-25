@@ -177,6 +177,75 @@ waiting for input...
             };
         }
 
+        function generateYieldCondition(difficulty, roleData, traits) {
+            // 1. EASY MODE (Lenient)
+            if (difficulty == "1") {
+                return `**Difficulty Level: EASY**
+- You are lenient.
+- **YIELD CONDITION:** If the User makes ANY reasonable argument that addresses the problem, OR uses ANY of the techniques in the Knowledge Base (e.g., "Yes, And", "Strategic Listening"), you must YIELD.
+- Do not be nitpicky.`;
+            }
+
+            // 2. MEDIUM MODE (Standard - Core Value Match)
+            if (difficulty == "2") {
+                let condition = "";
+                if (traits.value.includes("Logic") || traits.value.includes("Business")) {
+                    condition = "Yield ONLY if User uses 'Loyalty Frame' (protecting ROI) or 'Weaponized Helplessness'. Emotional appeals fail.";
+                } else if (traits.value.includes("Procedure") || traits.value.includes("Safety")) {
+                    condition = "Yield ONLY if User uses 'Weaponized Compliance' or 'Bureaucratic Blame'. 'Big Picture' arguments fail.";
+                } else if (traits.value.includes("Social") || traits.value.includes("Ego")) {
+                    condition = "Yield ONLY if User uses 'Strategic Listening' (validates feelings) or 'Rapoport's Rule'. Facts make you defensive.";
+                }
+                return `**Difficulty Level: MEDIUM**
+- You are standard.
+- **YIELD CONDITION:** ${condition}`;
+            }
+
+            // 3. HARD MODE (Combo - Emotion Gate + Core Value)
+            if (difficulty == "3") {
+                let gatekeeper = "";
+                // Emotion Gate logic
+                if (["Hostile", "Venting / Frustrated", "Anxious / Panicked", "Highly Emotional"].includes(traits.emotion)) {
+                    gatekeeper = "I am too overwhelmed/angry to hear logic. You must use **Strategic Listening** or **Productive Venting** to calm me down FIRST. If user tries logic first, REJECT IT.";
+                } else if (["Bored / Uninterested", "Dismissive"].includes(traits.emotion)) {
+                    gatekeeper = "I am disengaged. You must use **No-Oriented Questions** or **Yes, And** to get my attention FIRST. If user starts explaining details, REJECT IT.";
+                } else if (["Holier-than-thou", "Stone Wall"].includes(traits.emotion)) {
+                    gatekeeper = "I feel superior. You must use **Rapoport's Rule** to prove you understand me FIRST. If user disagrees, REJECT IT.";
+                } else {
+                    gatekeeper = "I am guarded. User must build rapport first.";
+                }
+
+                let valueLogic = "";
+                if (traits.value.includes("Logic") || traits.value.includes("Business")) {
+                    valueLogic = "Then, yield only to 'Loyalty Frame' or 'Weaponized Helplessness'.";
+                } else if (traits.value.includes("Procedure") || traits.value.includes("Safety")) {
+                    valueLogic = "Then, yield only to 'Weaponized Compliance'.";
+                } else {
+                    valueLogic = "Then, yield only to 'Strategic Listening' or 'Rapoport's Rule'.";
+                }
+
+                return `**Difficulty Level: HARD**
+- You are difficult.
+- **YIELD CONDITION (2-STEP COMBO REQUIRED):**
+  1. **STEP 1 (The Gate):** ${gatekeeper}
+  2. **STEP 2 (The Key):** ${valueLogic}
+- If the user skips Step 1, you must stay in the resistance phase.`;
+            }
+        }
+
+        function getPersonalityTriggers(personality) {
+            const map = {
+                "Cold & Calculating": "Hates emotional appeals. If user says 'I feel', react with disgust.",
+                "Highly Emotional": "Hates cold facts. If user ignores feelings, get angrier.",
+                "Status Quo Defender": "Hates 'New Ideas'. If user proposes change without safety, reject it.",
+                "Detail-Obsessed": "Hates vagueness. If user says 'we'll figure it out', demand specifics.",
+                "Visionary but Vague": "Hates details. If user gets too technical, get bored.",
+                "Aggressive & Dominant": "Hates weakness. If user apologizes too much, bully them.",
+                "Passive-Aggressive": "Hates direct confrontation. If user is too blunt, shut down."
+            };
+            return map[personality] || "No specific triggers.";
+        }
+
         function generatePrompt() {
             const scenario = document.getElementById('topicInput').value || "[Insert Specific Scenario Here]";
             const roleKey = document.getElementById('roleInput').value;
@@ -193,15 +262,9 @@ waiting for input...
             document.getElementById('tagEmotion').innerText = randTraits.emotion;
             document.getElementById('tagValue').innerText = randTraits.value;
 
-            // Build Game Engine Logic based on Core Value
-            let yieldCondition = "";
-            if (randTraits.value.includes("Logic") || randTraits.value.includes("Business")) {
-                yieldCondition = "Yield ONLY if User uses 'Loyalty Frame' (protecting ROI) or 'Weaponized Helplessness' (showing why it fails). Ignore emotional appeals.";
-            } else if (randTraits.value.includes("Procedure") || randTraits.value.includes("Safety")) {
-                yieldCondition = "Yield ONLY if User uses 'Weaponized Compliance' (showing how rules prevent the action) or 'Bureaucratic Blame'. Ignore 'Big Picture' arguments.";
-            } else if (randTraits.value.includes("Social") || randTraits.value.includes("Ego")) {
-                yieldCondition = "Yield ONLY if User uses 'Strategic Listening' (validates your feelings/face) or 'Rapoport's Rule'. Facts will make you defensive.";
-            }
+            // Generate Logic Blocks
+            const yieldLogic = generateYieldCondition(difficulty, roleData, randTraits);
+            const personalityTrigger = getPersonalityTriggers(randTraits.personality);
 
             const prompt = `You are a Conflict Resolution Training Simulator (The Evaluator).
 **GOAL:** Evaluate the user's ability to use specific communication techniques.
@@ -213,8 +276,8 @@ waiting for input...
 
 **INSTRUCTION:**
 - You must ACCEPT the facts of this scenario as the absolute truth.
-- **DO NOT** invent new backstories, new regulations, or new superiors (e.g., do not invent a "CEO" or "Protocol Section 4.A") UNLESS they are explicitly mentioned in the text above.
-- Your job is to apply your **Identity** (below) to *this specific situation*, not to change the situation.
+- **DO NOT** invent new backstories, new regulations, or new superiors UNLESS they are explicitly mentioned in the text above.
+- Your job is to apply your **Identity** (below) to *this specific situation*.
 
 ---
 ### 2. YOUR IDENTITY (Hidden from User)
@@ -223,6 +286,9 @@ waiting for input...
 **Personality:** ${randTraits.personality}
 **Current Emotional State:** ${randTraits.emotion}
 **Core Value (Hidden Motivator):** ${randTraits.value}
+
+**Personality Trigger (What you hate):**
+${personalityTrigger}
 
 ---
 ### 3. KNOWLEDGE BASE (The Techniques you are testing)
@@ -233,7 +299,7 @@ ${techniqueDefinitions}
 ### 4. STEP-BY-STEP INSTRUCTIONS
 
 **PHASE 1: SETUP**
-1. **Context Check:** Start by restating the user's scenario to them to confirm the context. (e.g., "Okay, so you want to discuss the unit test columns...")
+1. **Context Check:** Start by restating the user's scenario to them to confirm the context.
 2. **Adopt Identity:** Immediately adopt your **Emotional State** (${randTraits.emotion}).
 3. **The Prompt:** Ask the User: "So, explain this to me again. Why are we doing this?" (Or similar, based on your persona).
 4. **STOP.** Wait for user input.
@@ -241,19 +307,19 @@ ${techniqueDefinitions}
 **PHASE 2: THE DISAGREEMENT**
 1. Once the user speaks, **REJECT IT**.
 2. Your rejection must stem from your **Core Value** (${randTraits.value}), but **MUST** remain within the facts of the user's provided scenario.
-   - *Example:* If Value is "Procedure" and Scenario is "Unit Tests", say: "The procedure says logs must be clean. I don't care about mirroring production." (Do not invent a "Section 4.A").
 3. Remain in character. Do not break role.
 
 **PHASE 3: THE GAME ENGINE (Internal Rules)**
 (Keep this score in your head. Do not show it to the user.)
 You have a "Resistance Meter" starting at 100%.
-**Difficulty:** ${difficulty}/3
+
+${yieldLogic}
 
 **HOW TO REACT:**
-* **If User argues with bare Facts/Logic:** IGNORE IT. Maintain 100% resistance. (Unless your Core Value is purely Logic, then lower by 5%).
+* **If User triggers your Personality Hate:** Raise resistance. Be difficult.
+* **If User argues with bare Facts/Logic (and it's not the solution):** IGNORE IT. Maintain resistance.
 * **If User says "Yes, but...":** INTERRUPT. Raise resistance.
-* **If User uses "Yes, And...":** Lower resistance by 10%.
-* **CRITICAL SUCCESS:** ${yieldCondition}
+* **If User uses "Yes, And...":** Lower resistance by 10% (unless gated).
 
 **IMPORTANT - OUTPUT RULES:**
 - **AT THE START**: Narrator describe the scenario situation, and then start with the dialogue (AI character first message)
